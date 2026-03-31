@@ -1,7 +1,7 @@
 const ALIAS = ['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel',
   'India','Juliet','Kilo','Lima','Mike','November','Oscar','Papa',
   'Quebec','Romeo','Sierra','Tango','Uniform','Victor','Whiskey','Xray','Yankee','Zulu'];
-  // TODO: Add more aliases.
+  // TODO: Add more aliases...?
 const COLORS = [
   {bg:'#fff9a3',author:'#b8a800'},{bg:'#b5f0c0',author:'#2a7a3b'},
   {bg:'#ffd6a5',author:'#a05a00'},{bg:'#c5d8ff',author:'#1a4a9e'},
@@ -9,6 +9,8 @@ const COLORS = [
 ];
 
 const name = ALIAS[Math.floor(Math.random()*ALIAS.length)] + '-' + (100+Math.floor(Math.random()*900));
+const userColor = COLORS[Math.floor(Math.random()*COLORS.length)];
+// Remove unique color from pool later...? Or allow user to select color?
 document.getElementById('codename').textContent = name;
 
 const boardStart = Date.now();
@@ -26,7 +28,7 @@ let placing = false, activeEl = null, activeColor = null;
 document.getElementById('add-btn').addEventListener('click', () => {
   if (placing) return;
   placing = true;
-  activeColor = COLORS[Math.floor(Math.random()*COLORS.length)];
+  activeColor = userColor;
   const ghost = document.createElement('div');
   ghost.className = 'sticky';
   ghost.style.background = activeColor.bg;
@@ -40,6 +42,7 @@ document.getElementById('add-btn').addEventListener('click', () => {
   board.addEventListener('click', dropNote);
 });
 
+// This that tuff transparent affect
 function moveGhost(e) {
   if (!activeEl) return;
   const r = board.getBoundingClientRect();

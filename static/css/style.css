@@ -8,7 +8,7 @@ body { font-family: sans-serif; background: #eee; }
   position: relative; overflow: hidden;
 }
 #toolbar {
-  display: flex; align-items: center; justify-content: space-between;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   padding: 10px 20px; height: 56px;
   background: white; border-bottom: 1px solid #ddd;
 }
@@ -18,10 +18,20 @@ body { font-family: sans-serif; background: #eee; }
   line-height: 1.5; box-shadow: 2px 3px 8px rgba(0,0,0,0.15);
   word-break: break-word;
 }
-.sticky .author { font-size: 11px; font-weight: bold; opacity: 0.6; margin-bottom: 6px; }
-#add-btn { padding: 6px 16px; cursor: pointer; border: 1px solid #ccc; border-radius: 6px; background: white; }
+.sticky .author {font-size: 11px; font-weight: bold; opacity: 0.6; margin-bottom: 6px;}
+
+#add-btn {
+  padding: 6px 16px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+}
 #hint {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
   font-size: 12px; color: #999; background: rgba(255,255,255,0.8);
   padding: 4px 14px; border-radius: 99px; pointer-events: none;
 }
+#identity {justify-self: start;}
+#add-btn {justify-self: center;}
+#timer   {justify-self: end;}
