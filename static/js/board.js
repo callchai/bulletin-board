@@ -1,18 +1,22 @@
-let boardStart = Date.now();
 const board = document.getElementById('board');
 let placing = false, activeEl = null, activeColor = null;
 let currentUserName = null;
 
 function initBoard(userName, userColor) {
     currentUserName = userName;
-    // Show clock
-    setInterval(() => {
-        const s = Math.floor((Date.now() - boardStart) / 1000);
-        const h = String(Math.floor(s/3600)).padStart(2,'0');
-        const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
-        const sc = String(s%60).padStart(2,'0');
-        document.getElementById('clock').textContent = `${h}:${m}:${sc}`;
-    }, 1000);
+    // this should make the life clock work
+    fetch('/api/board-start')
+        .then(r => r.json())
+        .then(data => {
+            const boardStart = data.startMs;
+            setInterval(() => {
+                const s = Math.floor((Date.now() - boardStart) / 1000);
+                const h = String(Math.floor(s / 3600)).padStart(2, '0');
+                const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+                const sc = String(s % 60).padStart(2, '0');
+                document.getElementById('clock').textContent = `${h}:${m}:${sc}`;
+            }, 1000);
+        });
 
     // TODO: make sure this works. supposed to make sure posts 
     // stay on board 
@@ -55,23 +59,23 @@ function dropNote(e) {
     if (!text) { activeEl.remove(); cleanup(); return; }
     const r = board.getBoundingClientRect();
     const x = e.clientX - r.left - 80;
-    const y = e.clientY - r.top  - 20;
+    const y = e.clientY - r.top - 20;
+    const colorSnapshot = { ...activeColor };
     activeEl.remove();
 
     const postData = {
         text, x, y,
         author: currentUserName,
-        color: activeColor
+        color: colorSnapshot
     };
 
-    // Test if this works with firestore db
     fetch('/api/posts', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData)
     })
     .then(r => r.json())
-    .then(res => renderNote({...postData, id: res.id}));
+    .then(res => renderNote({ ...postData, id: res.id }));
 
     cleanup();
 }

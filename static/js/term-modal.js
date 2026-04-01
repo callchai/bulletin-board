@@ -1,6 +1,21 @@
 /*
 THIS IS A TEMPORARY TEST
 */
+
+// if this is not at top, everything breaks
+function setCookie(name, value) {
+    document.cookie = name + "=" + encodeURIComponent(value) + "; path=/";
+}
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i=0;i<ca.length;i++){
+        let c = ca[i].trim();
+        if(c.indexOf(nameEQ)===0) return decodeURIComponent(c.substring(nameEQ.length));
+    }
+    return null;
+}
+
 const ALIAS = ['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel',
     'India','Juliet','Kilo','Lima','Mike','November','Oscar','Papa',
     'Quebec','Romeo','Sierra','Tango','Uniform','Victor','Whiskey','Xray','Yankee','Zulu'];
@@ -41,18 +56,7 @@ if (!savedName) {
 // give color choice later?
 document.getElementById('codename').textContent = name;
 
-function setCookie(name, value) {
-    document.cookie = name + "=" + encodeURIComponent(value) + "; path=/";
-}
-function getCookie(name) {
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(';');
-    for (let i=0;i<ca.length;i++){
-        let c = ca[i].trim();
-        if(c.indexOf(nameEQ)===0) return decodeURIComponent(c.substring(nameEQ.length));
-    }
-    return null;
-}
+
 
 const termsModal = document.getElementById('terms-modal');
 const acceptBtn = document.getElementById('accept-terms');
@@ -110,6 +114,21 @@ enterBtn.addEventListener('click', () => {
     }, 300);
 });
 
+function showWelcomeBackModal() {
+    const modal = document.getElementById('welcomeback-modal');
+    const nameEl = document.getElementById('welcomeback-name');
+    nameEl.textContent = name;
+    modal.classList.add('show');
+
+    document.getElementById('welcomeback-enter').addEventListener('click', () => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            initBoard(name, userColor);
+        }, 300);
+    });
+}
+
 if (!getCookie(aliasCookieName)) {
     termsModal.classList.add('show');
     acceptBtn.addEventListener('click', () => {
@@ -121,5 +140,5 @@ if (!getCookie(aliasCookieName)) {
         }, 300);
         });
 } else {
-    showWelcomeModal();
+    showWelcomeBackModal();
 }

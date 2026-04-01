@@ -29,6 +29,18 @@ def add_post():
     doc_ref.set(post)
     return jsonify({'id': doc_ref.id}), 201
 
+@app.route('/api/board-start', methods=['GET'])
+def get_board_start():
+    doc = db.collection('meta').document('board').get()
+    if doc.exists:
+        ts = doc.to_dict().get('createdAt')
+        return jsonify({'startMs': int(ts.timestamp() * 1000)})
+    else:
+        now = firestore.SERVER_TIMESTAMP
+        db.collection('meta').document('board').set({'createdAt': now})
+        import time
+        return jsonify({'startMs': int(time.time() * 1000)})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
