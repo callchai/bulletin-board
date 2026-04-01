@@ -5,6 +5,3 @@ handlers:
     static_dir: static
   - url: /.*
     script: auto
-
-Flask==3.0.0
-gunicorn==21.2.0
