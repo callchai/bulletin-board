@@ -140,4 +140,3 @@ if (!getCookie(aliasCookieName)) {
     showWelcomeBackModal();
 }
 
-initBoard(name, userColor); // Try loading board during welcome
