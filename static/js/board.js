@@ -98,3 +98,16 @@ function cleanup() {
 if (typeof name !== 'undefined' && typeof userColor !== 'undefined') {
     initBoard(name, userColor);
 }
+
+// This should get new posts every second
+setInterval(() => {
+    fetch('/api/posts')
+        .then(r => r.json())
+        .then(posts => {
+            posts.forEach(p => {
+                if (!document.querySelector(`.sticky[data-id="${p.id}"]`)) {
+                    renderNote(p);
+                }
+            });
+        });
+}, 1000);
