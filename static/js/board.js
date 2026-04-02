@@ -4,17 +4,25 @@ let currentUserName = null;
 
 function initBoard(userName, userColor) {
     currentUserName = userName;
-    // this should make the life clock work
     fetch('/api/board-start')
         .then(r => r.json())
         .then(data => {
             const boardStart = data.startMs;
             setInterval(() => {
                 const s = Math.floor((Date.now() - boardStart) / 1000);
-                const h = String(Math.floor(s / 3600)).padStart(2, '0');
+                const totalHours = Math.floor(s / 3600);
                 const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
                 const sc = String(s % 60).padStart(2, '0');
-                document.getElementById('clock').textContent = `${h}:${m}:${sc}`;
+
+                // DONT RESET BOARD, MAKE SURE THIS WORKs as intended
+                if (totalHours >= 24) {
+                    const days = Math.floor(totalHours / 24);
+                    const h = String(totalHours % 24).padStart(2, '0');
+                    document.getElementById('clock').textContent = `${days}d ${h}:${m}:${sc}`;
+                } else {
+                    const h = String(totalHours).padStart(2, '0');
+                    document.getElementById('clock').textContent = `${h}:${m}:${sc}`;
+                }
             }, 1000);
         });
 

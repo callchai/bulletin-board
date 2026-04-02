@@ -10,6 +10,11 @@ body {
   background: #eee;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
 /* board style */
 #board {
   width: 100%;
@@ -354,6 +359,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-direction: row;
 }
 
 /* Help modal design */
@@ -375,6 +381,24 @@ body {
 #help-modal.show {
     opacity: 1;
     pointer-events: all;
+}
+
+#help-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 30px;
+    text-align: center;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 #help-content {
