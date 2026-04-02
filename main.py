@@ -3,7 +3,7 @@ from google.cloud import firestore
 from datetime import datetime, timezone
 
 app = Flask(__name__)
-db = firestore.Client()
+db = firestore.Client(database="bulletin-board")
 
 @app.route('/')
 def index():
