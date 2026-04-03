@@ -54,11 +54,11 @@ const COLORS = [
         `To post or not to post, that is the question.`,
         `All posters are equal, but some posters are more righteous than others.`,
         `I post, therefore I am.`,
-        `I have a dream, that one day, all posters will post in harmony...`,
+        `"I have a dream, that one day, all posters will post in harmony..."`,
         `Ask not what the Board can do for you, ask what you can do for the Board.`,
         `And then came a sound, distant first, that grew into castrophany<br>
         So immense that it could be heard all over the board<br>
-        There was no screams, there was no time.<br>.
+        There was no screams, there was no time.<br>
         The board called Monkey had spoken.<br>
         There was only fire, and then... nothing.`,
     ];
