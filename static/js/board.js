@@ -26,57 +26,41 @@ function initBoard(userName, userColor) {
             }, 1000);
         });
 
-    // TODO: make sure this works. supposed to make sure posts 
-    // stay on board 
     fetch('/api/posts')
         .then(r => r.json())
         .then(posts => posts.forEach(p => renderNote(p)));
 
 
-    // this is where the magic happens (sticky note looking thang)
     document.getElementById('add-btn').addEventListener('click', () => {
-        if (placing) return;
-        placing = true;
-        activeColor = userColor;
-        const ghost = document.createElement('div');
-        ghost.className = 'sticky';
-        ghost.style.background = activeColor.bg;
-        ghost.style.opacity = '0.85';
-        ghost.style.left = '-9999px'; ghost.style.top = '-9999px';
-        ghost.innerHTML = `<div class="author" style="color:${activeColor.author}">${userName}</div><textarea id="note-input" placeholder="Type your note..." rows="4" style="width:100%;border:none;background:transparent;font-size:13px;resize:none;outline:none;font-family:sans-serif;"></textarea>`;
-        board.appendChild(ghost);
-        activeEl = ghost;
-        setTimeout(() => document.getElementById('note-input').focus(), 50);
-        board.addEventListener('mousemove', moveGhost);
-        board.addEventListener('click', dropNote);
+        openPostModal(userName, userColor);
     });
 }
 
-// ghosty
 function moveGhost(e) {
-    if (!activeEl) return;
+    const ghost = document.getElementById('ghost-note');
+    if (!ghost) return;
     const r = board.getBoundingClientRect();
-    activeEl.style.left = (e.clientX - r.left - 80) + 'px';
-    activeEl.style.top  = (e.clientY - r.top  - 20) + 'px';
+    ghost.style.left = (e.clientX - r.left - 80) + 'px';
+    ghost.style.top  = (e.clientY - r.top  - 20) + 'px';
 }
 
 function dropNote(e) {
-    if (!placing || !activeEl) return;
-    if (e.target.tagName === 'TEXTAREA') return;
-    const text = document.getElementById('note-input').value.trim();
-    if (!text) { activeEl.remove(); cleanup(); return; }
+    if (!placing) return;
+    if (e.target.classList.contains('sticky')) return;
+    const ghost = document.getElementById('ghost-note');
     const r = board.getBoundingClientRect();
     const x = e.clientX - r.left - 80;
     const y = e.clientY - r.top - 20;
+    const text = board.dataset.pendingText;
     const colorSnapshot = { ...activeColor };
-    activeEl.remove();
 
-    const postData = {
-        text, x, y,
-        author: currentUserName,
-        color: colorSnapshot
-    };
+    if (ghost) ghost.remove();
+    board.removeEventListener('mousemove', moveGhost);
+    board.removeEventListener('click', dropNote);
+    board.style.cursor = '';
+    placing = false;
 
+    const postData = { text, x, y, author: currentUserName, color: colorSnapshot };
     fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -84,8 +68,25 @@ function dropNote(e) {
     })
     .then(r => r.json())
     .then(res => renderNote({ ...postData, id: res.id }));
+}
 
-    cleanup();
+function startPlacing(text, color) {
+    placing = true;
+    activeColor = color;
+    const ghost = document.createElement('div');
+    ghost.className = 'sticky';
+    ghost.id = 'ghost-note';
+    ghost.style.background = color.bg;
+    ghost.style.opacity = '0.85';
+    ghost.style.left = '-9999px';
+    ghost.style.top = '-9999px';
+    ghost.style.pointerEvents = 'none';
+    ghost.innerHTML = `<div class="author" style="color:${color.author}">${currentUserName}</div>${text}`;
+    board.appendChild(ghost);
+    board.dataset.pendingText = text;
+    board.addEventListener('mousemove', moveGhost);
+    board.addEventListener('click', dropNote);
+    board.style.cursor = 'crosshair';
 }
 
 function renderNote(p) {
@@ -94,8 +95,28 @@ function renderNote(p) {
     note.dataset.id = p.id;
     note.style.cssText = `left:${p.x}px;top:${p.y}px;background:${p.color.bg};`;
     note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${p.text}`;
+    note.addEventListener('click', () => openViewModal(p));
     board.appendChild(note);
 }
+
+function openViewModal(p) {
+    const modal = document.getElementById('view-modal');
+    const note = document.getElementById('view-note');
+    document.getElementById('view-author').style.color = p.color.author;
+    document.getElementById('view-author').textContent = p.author;
+    document.getElementById('view-text').textContent = p.text;
+    note.style.background = p.color.bg;
+    modal.classList.add('show');
+}
+
+document.getElementById('view-close').addEventListener('click', () => {
+    document.getElementById('view-modal').classList.remove('show');
+});
+
+document.getElementById('view-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('view-modal'))
+        document.getElementById('view-modal').classList.remove('show');
+});
 
 function cleanup() {
     placing = false; activeEl = null;
@@ -107,12 +128,10 @@ if (typeof name !== 'undefined' && typeof userColor !== 'undefined') {
     initBoard(name, userColor);
 }
 
-// TODO: Test help button and tabs
 document.getElementById('help-btn').addEventListener('click', () => {
     const modal = document.getElementById('help-modal');
     modal.classList.add('show');
 
-    // Reset to home tab with new quote each open
     document.querySelectorAll('.help-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.help-section').forEach(s => s.classList.remove('active'));
     document.querySelector('.help-tab[data-target="help-home"]').classList.add('active');

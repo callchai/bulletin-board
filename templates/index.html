@@ -52,6 +52,40 @@
             <button id="welcomeback-enter">Return to the Board</button>
         </div>
     </div>
+    <div id="post-modal">
+    <div id="post-modal-content">
+        <div id="post-type-bar">
+            <button class="post-type-btn active" id="btn-text">Note</button>
+            <button class="post-type-btn disabled" id="btn-draw" title="WIP">Draw</button>
+            <!-- <button class="post-type-btn disabled" id="btn-image" title="WIP">Image</button> -->
+        </div>
+        <div id="post-editor">
+            <div id="post-preview-wrap">
+                <div id="post-preview">
+                    <div id="preview-author"></div>
+                    <div id="preview-text">Your note will appear here...</div>
+                </div>
+            </div>
+            <div id="post-controls">
+                <textarea id="post-input" placeholder="Write your note..." maxlength="300" rows="5"></textarea>
+                <div id="post-char-count">0 / 300</div>
+                <div id="post-actions">
+                    <button id="post-cancel">Cancel</button>
+                    <button id="post-confirm">Post to Board</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div id="view-modal">
+        <div id="view-modal-content">
+            <div id="view-note">
+                <div id="view-author"></div>
+                <div id="view-text"></div>
+            </div>
+            <button id="view-close">Close</button>
+        </div>
+    </div>
   <div id="toolbar">
     <div id="identity">Thou are <strong id="codename"></strong></div>
     <button id="add-btn">Post</button>
@@ -146,6 +180,7 @@
 <div id="board"></div>
   </div>
   <script src="/static/js/term-modal.js"></script>
+  <script src="/static/js/post-modal.js"></script>
   <script src="/static/js/board.js"></script>
 </body>
 </html>
