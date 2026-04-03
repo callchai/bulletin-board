@@ -46,7 +46,7 @@ function moveGhost(e) {
 
 function dropNote(e) {
     if (!placing) return;
-    if (e.target.classList.contains('sticky')) return;
+    // if (e.target.classList.contains('sticky')) return; -> Check if allow posting on top of other
     const ghost = document.getElementById('ghost-note');
     const r = board.getBoundingClientRect();
     const x = e.clientX - r.left - 80;
