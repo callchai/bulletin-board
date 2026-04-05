@@ -9,17 +9,23 @@ db = firestore.Client()
 def index():
     return render_template('index.html')
 
-# This is for firestore, to get and add posts
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
     """
-    Fixed bum ahh caching issue
+    Fetches posts from Firestore.
+
+    TODO:
+    Remember to test performance and index so it updates 
+    posts in actual order of creation, not retrieve time.
     """
-    posts = db.collection('posts').stream()
+    posts = db.collection('posts').order_by('timestamp').stream()
     result = []
+    z = 1
     for p in posts:
         d = p.to_dict()
         d['id'] = p.id
+        d['zIndex'] = z
+        z += 1
         d.pop('timestamp', None)
         result.append(d)
     response = jsonify(result)

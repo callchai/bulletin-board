@@ -46,7 +46,6 @@ function moveGhost(e) {
 
 function dropNote(e) {
     if (!placing) return;
-    // if (e.target.classList.contains('sticky')) return; -> Check if allow posting on top of other
     const ghost = document.getElementById('ghost-note');
     const r = board.getBoundingClientRect();
     const x = e.clientX - r.left - 80;
@@ -59,6 +58,7 @@ function dropNote(e) {
     board.removeEventListener('click', dropNote);
     board.style.cursor = '';
     placing = false;
+    document.body.classList.remove('is-placing');
     document.querySelectorAll('.sticky').forEach(n => n.style.pointerEvents = '');
 
     const postData = { text, x, y, author: currentUserName, color: colorSnapshot };
@@ -68,7 +68,7 @@ function dropNote(e) {
         body: JSON.stringify(postData)
     })
     .then(r => r.json())
-    .then(res => renderNote({ ...postData, id: res.id }));
+    .then(res => renderNote({ ...postData, id: res.id, zIndex: 9999 }));
 }
 
 function startPlacing(text, color) {
@@ -89,21 +89,21 @@ function startPlacing(text, color) {
     board.addEventListener('mousemove', moveGhost);
     board.addEventListener('click', dropNote);
     board.style.cursor = 'crosshair';
+    document.body.classList.add('is-placing');
 }
 
 function renderNote(p) {
     const note = document.createElement('div');
     note.className = 'sticky';
     note.dataset.id = p.id;
-    note.style.cssText = `left:${p.x}px;top:${p.y}px;background:${p.color.bg};`;
+    note.style.cssText = `left:${p.x}px;top:${p.y}px;background:${p.color.bg};z-index:${p.zIndex || 1};`;
     note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${p.text}`;
     note.addEventListener('click', () => openViewModal(p));
     board.appendChild(note);
 }
 
 function openViewModal(p) {
-    if (placing) return; // TODO: check if this disables from viewing while in place mode
-
+    if (placing) return;
     const modal = document.getElementById('view-modal');
     const note = document.getElementById('view-note');
     document.getElementById('view-author').style.color = p.color.author;
@@ -157,7 +157,25 @@ document.querySelectorAll('.help-tab').forEach(tab => {
     });
 });
 
-// This should get new posts every second
+/*
+checkScreenSize is a band aid fix for small screens.
+Too lazy to make board react to smaller screens
+*/
+function checkScreenSize() {
+    if (window.innerWidth < 700 || window.innerHeight < 500) {
+        document.getElementById('small-screen-warning').classList.add('show');
+    }
+}
+
+document.getElementById('small-screen-dismiss').addEventListener('click', () => {
+    document.getElementById('small-screen-warning').classList.remove('show');
+});
+
+checkScreenSize();
+window.addEventListener('resize', checkScreenSize);
+
+
+// This should get new posts every second, set refresh lower for real demo
 setInterval(() => {
     fetch('/api/posts')
         .then(r => r.json())
@@ -169,3 +187,5 @@ setInterval(() => {
             });
         });
 }, 8000);
+
+
