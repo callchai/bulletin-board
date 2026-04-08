@@ -8,6 +8,7 @@ function initBoard(userName, userColor) {
         .then(r => r.json())
         .then(data => {
             const boardStart = data.startMs;
+            window._boardStartMs = boardStart;
             setInterval(() => {
                 const s = Math.floor((Date.now() - boardStart) / 1000);
                 const totalHours = Math.floor(s / 3600);
@@ -69,7 +70,7 @@ function dropNote(e) {
     delete board.dataset.pendingImageUrl;
     delete board.dataset.pendingType;
 
-    const postData = { text, x, y, author: currentUserName, color: colorSnapshot, type, imageUrl };
+    const postData = { text, x, y, author: currentUserName, color: colorSnapshot, type, imageUrl, postedAt: Date.now() };
     fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -126,6 +127,24 @@ function openViewModal(p) {
     document.getElementById('view-author').textContent = p.author;
     document.getElementById('view-text').textContent = p.text;
     note.style.background = p.color.bg;
+
+    const tsEl = document.getElementById('view-timestamps');
+    if (p.postedAt && window._boardStartMs) {
+        const estStr = new Date(p.postedAt).toLocaleString('en-US', {
+            timeZone: 'America/New_York',
+            month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit', hour12: true
+        });
+        const elapsedMs = p.postedAt - window._boardStartMs;
+        const s = Math.max(0, Math.floor(elapsedMs / 1000));
+        const bh = String(Math.floor(s / 3600)).padStart(2,'0');
+        const bm = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
+        const bs = String(s % 60).padStart(2,'0');
+        tsEl.innerHTML = `Posted ${estStr} EST<br> [Board time: ${bh}:${bm}:${bs}]`;
+    } else {
+        tsEl.innerHTML = '';
+    }
+
     modal.classList.add('show');
 }
 

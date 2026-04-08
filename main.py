@@ -28,7 +28,9 @@ def get_posts():
         d['id'] = p.id
         d['zIndex'] = z
         z += 1
-        d.pop('timestamp', None)
+        ts = d.pop('timestamp', None)
+        if ts:
+            d['postedAt'] = int(ts.timestamp() * 1000)
         result.append(d)
     response = jsonify(result)
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'

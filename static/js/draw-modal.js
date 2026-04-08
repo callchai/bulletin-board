@@ -2,13 +2,17 @@ let drawHistory = [];
 let isDrawing = false;
 let drawCtx = null;
 let drawCanvas = null;
+let canvasInitialized = false;
 
 function initDrawCanvas() {
     drawCanvas = document.getElementById('draw-canvas');
     drawCtx = drawCanvas.getContext('2d');
-    drawCtx.fillStyle = '#fff9a3'; // ---!!! Change this later to match user's sticky bg color in preview
+    drawCtx.fillStyle = '#fff9a3';
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
     saveDrawState();
+
+    if (canvasInitialized) return;
+    canvasInitialized = true;
 
     let painting = false;
 
@@ -37,7 +41,6 @@ function initDrawCanvas() {
     drawCanvas.addEventListener('mouseleave', () => {
         if (painting) { painting = false; saveDrawState(); }
     });
-
 }
 
 function getCanvasPos(e) {
@@ -80,6 +83,7 @@ function closeDrawMode() {
     document.getElementById('draw-panel').style.display = 'none';
     document.getElementById('post-editor').style.display = 'flex';
     drawHistory = [];
+    canvasInitialized = false;
 }
 
 function updateSizePreview() {

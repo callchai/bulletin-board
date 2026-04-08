@@ -4,6 +4,38 @@ for the pop up when hitting post button
 let pendingText = null;
 let pendingColor = null;
 
+const COLOR_WHEEL = [
+    {bg:'#fff9a3',author:'#b8a800'},
+    {bg:'#b5f0c0',author:'#2a7a3b'},
+    {bg:'#ffd6a5',author:'#a05a00'},
+    {bg:'#c5d8ff',author:'#1a4a9e'},
+    {bg:'#f9c5d1',author:'#a0253a'},
+    {bg:'#e8d5ff',author:'#6a1a9e'},
+    {bg:'#d5f5f5',author:'#1a7a7a'},
+    {bg:'#ffe0e0',author:'#9e1a1a'},
+    {bg:'#f0ffe0',author:'#4a7a1a'},
+    {bg:'#fff0d5',author:'#8a5a00'},
+    {bg:'#e0e8ff',author:'#1a3a9e'},
+    {bg:'#ffe8f5',author:'#9e1a6a'},
+];
+
+function buildColorWheel(currentColor, onSelect) {
+    const wrap = document.getElementById('color-wheel-wrap');
+    wrap.innerHTML = '';
+    COLOR_WHEEL.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'color-wheel-swatch';
+        btn.style.background = c.bg;
+        btn.style.borderColor = (c.bg === currentColor.bg) ? c.author : 'transparent';
+        btn.title = c.bg;
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.color-wheel-swatch').forEach(s => s.style.borderColor = 'transparent');
+            btn.style.borderColor = c.author;
+            onSelect(c);
+        });
+        wrap.appendChild(btn);
+    });
+}
 
 function openPostModal(userName, userColor) {
     const modal = document.getElementById('post-modal');
@@ -23,7 +55,13 @@ function openPostModal(userName, userColor) {
     input.value = '';
     charCount.textContent = '0 / 300';
     confirmBtn.disabled = true;
-    pendingColor = userColor;
+    pendingColor = { ...userColor };
+
+    buildColorWheel(userColor, (c) => {
+        pendingColor = c;
+        preview.style.background = c.bg;
+        previewAuthor.style.color = c.author;
+    });
 
     modal.classList.add('show');
     document.body.classList.add('is-posting');

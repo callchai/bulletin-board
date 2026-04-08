@@ -1052,3 +1052,25 @@ body.is-posting .sticky:hover {
     cursor: not-allowed;
     transform: none;
 }
+#color-wheel-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    max-width: 160px;
+    margin-top: 8px;
+}
+
+.color-wheel-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.color-wheel-swatch:hover {
+    transform: scale(1.2);
+}
