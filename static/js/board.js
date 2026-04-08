@@ -217,3 +217,45 @@ function scaleBoard() {
 
 scaleBoard();
 window.addEventListener('resize', scaleBoard);
+
+/*
+The following is for the search bar.
+Only filters by post author name cause searching by
+content is too hard for my lazy brain and I dont want to do it
+*/
+const searchInput = document.getElementById('search-input');
+const searchClear = document.getElementById('search-clear');
+
+function applySearch(query) {
+    const notes = document.querySelectorAll('.sticky[data-id]');
+    if (!query) {
+        notes.forEach(n => {
+            n.classList.remove('search-dim', 'search-highlight');
+            n.style.pointerEvents = '';
+        });
+        return;
+    }
+    notes.forEach(n => {
+        const author = n.querySelector('.author')?.textContent?.toLowerCase() || '';
+        if (author.includes(query.toLowerCase())) {
+            n.classList.add('search-highlight');
+            n.classList.remove('search-dim');
+            n.style.pointerEvents = '';
+        } else {
+            n.classList.add('search-dim');
+            n.classList.remove('search-highlight');
+        }
+    });
+}
+
+searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim();
+    searchClear.classList.toggle('visible', q.length > 0);
+    applySearch(q);
+});
+
+searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchClear.classList.remove('visible');
+    applySearch('');
+});

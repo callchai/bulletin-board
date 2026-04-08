@@ -837,3 +837,50 @@ body.is-posting .sticky:hover {
     font-weight: bold;
     cursor: pointer;
 }
+
+/* This is the search bar */
+#search-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#search-input {
+    padding: 5px 10px;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 160px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#search-input:focus {
+    border-color: #d4af37;
+}
+
+#search-clear {
+    padding: 4px 8px;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    color: #888;
+    display: none;
+}
+
+#search-clear.visible {
+    display: inline-block;
+}
+
+.sticky.search-dim {
+    opacity: 0.2;
+    pointer-events: none !important;
+}
+
+.sticky.search-highlight {
+    outline: 2px solid #d4af37;
+    box-shadow: 0 0 12px rgba(212,175,55,0.6);
+    z-index: 100 !important;
+}
