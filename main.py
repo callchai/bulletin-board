@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, jsonify
-from google.cloud import firestore
+from google.cloud import firestore, storage
 from datetime import datetime, timezone
 
 app = Flask(__name__)
 db = firestore.Client()
+BUCKET_NAME = 'bulletin-board-drawings'
+
 
 @app.route('/')
 def index():
@@ -34,16 +36,34 @@ def get_posts():
     response.headers['Expires'] = '0'
     return response
 
+@app.route('/api/drawing-upload-url', methods=['POST'])
+def drawing_upload_url():
+    data = request.get_json()
+    filename = data.get('filename', f'drawing-{datetime.now().timestamp()}.png')
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob(filename)
+    upload_url = blob.generate_signed_url(
+        version='v4',
+        expiration=300,
+        method='PUT',
+        content_type='image/png'
+    )
+    public_url = f'https://storage.googleapis.com/{BUCKET_NAME}/{filename}'
+    return jsonify({'uploadUrl': upload_url, 'publicUrl': public_url})
+
 @app.route('/api/posts', methods=['POST'])
 def add_post():
     data = request.get_json()
     doc_ref = db.collection('posts').document()
     post = {
-        'text':      data['text'],
+        'text':      data.get('text', ''),
         'author':    data['author'],
         'color':     data['color'],
         'x':         data['x'],
         'y':         data['y'],
+        'type':      data.get('type', 'text'),
+        'imageUrl':  data.get('imageUrl', None),
         'timestamp': firestore.SERVER_TIMESTAMP
     }
     doc_ref.set(post)

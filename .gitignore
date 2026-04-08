@@ -1,0 +1,4 @@
+drawing-sa-key.json
+__pycache__/
+*.pyc
+.env

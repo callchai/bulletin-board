@@ -51,12 +51,12 @@ function dropNote(e) {
     if (!placing) return;
     const ghost = document.getElementById('ghost-note');
     const r = board.getBoundingClientRect();
-
-    // --- !!! --- TEST THIS FOR SCALING ISSUE FIX --- !!! ---
     const scale = r.width / 1600;
     const x = (e.clientX - r.left) / scale - 80;
     const y = (e.clientY - r.top)  / scale - 20;
-    const text = board.dataset.pendingText;
+    const text = board.dataset.pendingText || '';
+    const imageUrl = board.dataset.pendingImageUrl || null;
+    const type = board.dataset.pendingType || 'text';
     const colorSnapshot = { ...activeColor };
 
     if (ghost) ghost.remove();
@@ -66,8 +66,10 @@ function dropNote(e) {
     placing = false;
     document.body.classList.remove('is-placing');
     document.querySelectorAll('.sticky').forEach(n => n.style.pointerEvents = '');
+    delete board.dataset.pendingImageUrl;
+    delete board.dataset.pendingType;
 
-    const postData = { text, x, y, author: currentUserName, color: colorSnapshot };
+    const postData = { text, x, y, author: currentUserName, color: colorSnapshot, type, imageUrl };
     fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,7 +106,14 @@ function renderNote(p) {
     note.className = 'sticky';
     note.dataset.id = p.id;
     note.style.cssText = `left:${p.x}px;top:${p.y}px;background:${p.color.bg};z-index:${p.zIndex || 1};`;
-    note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${p.text}`;
+
+    if (p.type === 'drawing' && p.imageUrl) {
+        note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>
+            <img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />`;
+    } else {
+        note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${p.text}`;
+    }
+
     note.addEventListener('click', () => openViewModal(p));
     board.appendChild(note);
 }
@@ -259,3 +268,27 @@ searchClear.addEventListener('click', () => {
     searchClear.classList.remove('visible');
     applySearch('');
 });
+
+function startPlacingDrawing(imageUrl, color) {
+    placing = true;
+    activeColor = color;
+    const ghost = document.createElement('div');
+    ghost.className = 'sticky';
+    ghost.id = 'ghost-note';
+    ghost.style.background = color.bg;
+    ghost.style.opacity = '0.85';
+    ghost.style.left = '-9999px';
+    ghost.style.top = '-9999px';
+    ghost.style.pointerEvents = 'none';
+    ghost.style.zIndex = '9999';
+    ghost.innerHTML = `<div class="author" style="color:${color.author}">${currentUserName}</div>
+        <img src="${imageUrl}" style="width:100%;border-radius:2px;display:block;" />`;
+    board.appendChild(ghost);
+    board.dataset.pendingImageUrl = imageUrl;
+    board.dataset.pendingType = 'drawing';
+    document.querySelectorAll('.sticky').forEach(n => n.style.pointerEvents = 'none');
+    board.addEventListener('mousemove', moveGhost);
+    board.addEventListener('click', dropNote);
+    board.style.cursor = 'crosshair';
+    document.body.classList.add('is-placing');
+}
