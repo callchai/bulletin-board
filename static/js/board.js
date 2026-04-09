@@ -1,6 +1,11 @@
 const board = document.getElementById('board');
+const postId = p.id;
+const voter = currentUserName;
+let userVote = p.userVote || null;
 let placing = false, activeEl = null, activeColor = null;
 let currentUserName = null;
+
+
 
 function initBoard(userName, userColor) {
     currentUserName = userName;
@@ -117,9 +122,10 @@ function renderNote(p) {
 
     if (p.type === 'drawing' && p.imageUrl) {
         note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>
-            <img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />`;
+            <img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />
+            <div class="note-score" style="color:${p.color.author}">${scoreLabel(p.score)}</div>`;
     } else {
-        note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${p.text}`;
+        note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${p.text}<div class="note-score" style="color:${p.color.author}">${scoreLabel(p.score)}</div>`;
     }
 
     note.addEventListener('click', () => openViewModal(p));
@@ -160,6 +166,42 @@ function openViewModal(p) {
 
     modal.classList.add('show');
 }
+
+function renderVoteButtons() {
+    document.getElementById('vote-up').style.fontWeight = userVote === 'up' ? 'bold' : 'normal';
+    document.getElementById('vote-down').style.fontWeight = userVote === 'down' ? 'bold' : 'normal';
+    document.getElementById('view-score').textContent = `Score: ${p.score || 0}`;
+}
+
+document.getElementById('vote-up').onclick = () => {
+    fetch(`/api/posts/${postId}/vote`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({direction: 'up', voter})
+    }).then(r => r.json()).then(res => {
+        p.score = res.score;
+        userVote = res.userVote;
+        renderVoteButtons();
+        const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
+        if (noteEl) noteEl.textContent = scoreLabel(res.score);
+    });
+};
+
+document.getElementById('vote-down').onclick = () => {
+    fetch(`/api/posts/${postId}/vote`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({direction: 'down', voter})
+    }).then(r => r.json()).then(res => {
+        p.score = res.score;
+        userVote = res.userVote;
+        renderVoteButtons();
+        const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
+        if (noteEl) noteEl.textContent = scoreLabel(res.score);
+    });
+};
+
+renderVoteButtons();
 
 document.getElementById('view-close').addEventListener('click', () => {
     document.getElementById('view-modal').classList.remove('show');
@@ -324,4 +366,11 @@ function startPlacingDrawing(imageUrl, color, caption) {
     board.addEventListener('click', dropNote);
     board.style.cursor = 'crosshair';
     document.body.classList.add('is-placing');
+}
+
+function scoreLabel(score) {
+    score = score || 0;
+    if (score > 0) return `+${score} ✦`;
+    if (score < 0) return `${score} ✦`;
+    return '';
 }

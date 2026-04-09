@@ -26,6 +26,7 @@ def get_posts():
     for p in posts:
         d = p.to_dict()
         d['id'] = p.id
+        d['score'] = d.get('score', 0)
         d['zIndex'] = z
         z += 1
         ts = d.pop('timestamp', None)
@@ -99,6 +100,28 @@ def get_board_start():
         now = datetime.now(timezone.utc)
         db.collection('meta').document('board').set({'createdAt': now})
         return jsonify({'startMs': int(now.timestamp() * 1000)})
+    
+@app.route('/api/posts/<post_id>/vote', methods=['POST'])
+def vote_post(post_id):
+    data = request.get_json()
+    direction = data.get('direction')
+    voter = data.get('voter')
+    if direction not in ('up', 'down') or not voter:
+        return jsonify({'error': 'invalid'}), 400
+    ref = db.collection('posts').document(post_id)
+    doc = ref.get()
+    if not doc.exists:
+        return jsonify({'error': 'not found'}), 404
+    post = doc.to_dict()
+    votes = post.get('votes', {})
+    prev = votes.get(voter)
+    if prev == direction:
+        del votes[voter]
+    else:
+        votes[voter] = direction
+    score = sum(1 if v == 'up' else -1 for v in votes.values())
+    ref.update({'votes': votes, 'score': score})
+    return jsonify({'score': score, 'userVote': votes.get(voter, None)})
 
 if __name__ == '__main__':
     app.run(debug=True)

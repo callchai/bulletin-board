@@ -1101,3 +1101,40 @@ body.is-posting .sticky:hover {
     font-size: 10px;
     opacity: 0.5;
 }
+/* Note score display on view modal */
+.note-score {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    font-size: 10px;
+    opacity: 0.6;
+}
+
+#vote-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #fff;
+    font-size: 14px;
+}
+
+#vote-up, #vote-down {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+#vote-up:hover { background: rgba(100,220,100,0.35); }
+#vote-down:hover { background: rgba(220,100,100,0.35); }
+#vote-up[style*="bold"] { background: rgba(100,220,100,0.5); }
+#vote-down[style*="bold"] { background: rgba(220,100,100,0.5); }
+
+#view-score {
+    min-width: 70px;
+    text-align: center;
+}
