@@ -1077,4 +1077,5 @@ body.is-posting .sticky:hover {
 #view-timestamps {
     margin-top: 0;
     line-height: 1.4;
+    margin-bottom: 8px;
 }
