@@ -49,8 +49,11 @@ function openPostModal(userName, userColor) {
     document.getElementById('btn-text').classList.add('active');
     document.getElementById('color-wheel-wrap').style.display = '';
 
-    preview.style.background = userColor.bg;
-    previewAuthor.style.color = userColor.author;
+    const savedColor = localStorage.getItem('bb_last_note_color');
+    const startColor = savedColor ? JSON.parse(savedColor) : { ...userColor };
+
+    preview.style.background = startColor.bg;
+    previewAuthor.style.color = startColor.author;
     previewAuthor.textContent = userName;
     previewText.textContent = 'Your note will appear here...';
     previewText.style.fontStyle = 'italic';
@@ -58,12 +61,13 @@ function openPostModal(userName, userColor) {
     input.value = '';
     charCount.textContent = '0 / 300';
     confirmBtn.disabled = true;
-    pendingColor = { ...userColor };
+    pendingColor = { ...startColor };
 
-    buildColorWheel(userColor, (c) => {
+    buildColorWheel(startColor, (c) => {
         pendingColor = c;
         preview.style.background = c.bg;
         previewAuthor.style.color = c.author;
+        localStorage.setItem('bb_last_note_color', JSON.stringify(c));
     });
 
     modal.classList.add('show');

@@ -78,6 +78,7 @@ def add_post():
         'y':         data['y'],
         'type':      data.get('type', 'text'),
         'imageUrl':  data.get('imageUrl', None),
+        'caption':   data.get('caption', ''),
         'timestamp': firestore.SERVER_TIMESTAMP
     }
     doc_ref.set(post)

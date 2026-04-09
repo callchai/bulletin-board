@@ -83,16 +83,23 @@
                 <input type="color" id="draw-color" value="#222222" title="Custom color"/>
                 <div id="draw-size-wrap">
                     <input type="range" id="draw-size" min="2" max="32" value="6"/>
-                    <div id="size-preview-dot"></div>
+                    <div id="size-preview-dot-wrap" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <div id="size-preview-dot"></div>
+                    </div>
                 </div>
                 <button id="draw-undo" title="Undo">↩ Undo</button>
                 <button id="draw-clear" title="Clear canvas">Clear</button>
             </div>
             <canvas id="draw-canvas" width="480" height="320"></canvas>
-            <div id="draw-actions">
-                <button id="draw-cancel">Cancel</button>
-                <button id="draw-post">Post Drawing</button>
-            </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                    <label style="font-size:12px;color:#b8860b;white-space:nowrap;">Caption (optional)</label>
+                    <input type="text" id="draw-caption" maxlength="50" placeholder="Shown under drawing when viewed..." style="flex:1;padding:6px 10px;border:1.5px solid #d4af37;border-radius:8px;background:#fffbee;font-size:13px;outline:none;"/>
+                    <span id="draw-caption-count" style="font-size:11px;color:#b8860b;opacity:0.7;white-space:nowrap;">0/50</span>
+                </div>
+                <div id="draw-actions">
+                    <button id="draw-cancel">Cancel</button>
+                    <button id="draw-post">Post Drawing</button>
+                </div>
         </div>
     </div>
     </div>

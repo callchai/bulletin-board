@@ -3,11 +3,12 @@ let isDrawing = false;
 let drawCtx = null;
 let drawCanvas = null;
 let canvasInitialized = false;
+let _currentDrawBg = '#fff9a3';
 
 function initDrawCanvas() {
     drawCanvas = document.getElementById('draw-canvas');
     drawCtx = drawCanvas.getContext('2d');
-    drawCtx.fillStyle = '#fff9a3';
+    drawCtx.fillStyle = _currentDrawBg;
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
 
     if (canvasInitialized) return;
@@ -35,29 +36,19 @@ function initDrawCanvas() {
     });
 
     drawCanvas.addEventListener('mouseup', () => {
-        if (painting) {
-            painting = false;
-            drawCtx.closePath();
-            saveDrawState();
-        }
+        if (painting) { painting = false; drawCtx.closePath(); saveDrawState(); }
     });
 
     drawCanvas.addEventListener('mouseleave', () => {
-        if (painting) {
-            painting = false;
-            drawCtx.closePath();
-            saveDrawState();
-        }
+        if (painting) { painting = false; drawCtx.closePath(); saveDrawState(); }
     });
 }
 
 function getCanvasPos(e) {
     const rect = drawCanvas.getBoundingClientRect();
-    const scaleX = drawCanvas.width / rect.width;
-    const scaleY = drawCanvas.height / rect.height;
     return {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY
+        x: (e.clientX - rect.left) * (drawCanvas.width / rect.width),
+        y: (e.clientY - rect.top)  * (drawCanvas.height / rect.height)
     };
 }
 
@@ -73,26 +64,65 @@ function undoDraw() {
 }
 
 function clearDrawCanvas(bgColor) {
+    _currentDrawBg = bgColor || '#fff9a3';
     drawHistory = [];
-    drawCtx.fillStyle = bgColor || '#fff9a3';
+    drawCtx.fillStyle = _currentDrawBg;
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
     saveDrawState();
+}
+
+function hasDrawingContent() {
+    return drawHistory.length > 1;
 }
 
 function openDrawMode(userColor) {
     document.getElementById('draw-panel').style.cssText = 'display:flex; flex-direction:column; gap:12px;';
     document.getElementById('post-editor').style.display = 'none';
     document.getElementById('color-wheel-wrap').style.display = 'none';
-    initDrawCanvas();
+
     const bgPicker = document.getElementById('draw-bg-color');
-    bgPicker.value = userColor.bg.length === 7 ? userColor.bg : '#fff9a3';
-    clearDrawCanvas(bgPicker.value);
+    const savedBg = localStorage.getItem('bb_last_draw_bg');
+    const initBg = savedBg || (userColor.bg.length === 7 ? userColor.bg : '#fff9a3');
+    bgPicker.value = initBg;
+    _currentDrawBg = initBg;
+
+    initDrawCanvas();
+    clearDrawCanvas(initBg);
+
+    const captionInput = document.getElementById('draw-caption');
+    const captionCount = document.getElementById('draw-caption-count');
+    if (captionInput) { captionInput.value = ''; captionCount.textContent = '0/50'; }
+
     bgPicker.oninput = () => {
-        const saved = drawHistory[drawHistory.length - 1];
-        drawCtx.fillStyle = bgPicker.value;
+        const newBg = bgPicker.value;
+        localStorage.setItem('bb_last_draw_bg', newBg);
+
+        const strokes = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+        _currentDrawBg = newBg;
+        drawCtx.fillStyle = newBg;
         drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-        if (saved) drawCtx.putImageData(saved, 0, 0);
+
+        if (drawHistory.length > 0) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = drawCanvas.width;
+            tempCanvas.height = drawCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.fillStyle = newBg;
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            drawHistory[0] = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        }
+        drawCtx.putImageData(drawHistory[drawHistory.length - 1], 0, 0);
+        const offscreen = document.createElement('canvas');
+        offscreen.width = drawCanvas.width;
+        offscreen.height = drawCanvas.height;
+        const offCtx = offscreen.getContext('2d');
+        offCtx.fillStyle = newBg;
+        offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+        offCtx.drawImage(drawCanvas, 0, 0);
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        drawCtx.drawImage(offscreen, 0, 0);
     };
+
     updateSizePreview();
 }
 
@@ -111,8 +141,7 @@ function updateSizePreview() {
     dot.style.height = size + 'px';
 }
 
-async function submitDrawing(userColor) {
-    // Ts was so hard to write.
+async function submitDrawing() {
     return new Promise((resolve) => {
         drawCanvas.toBlob(async (blob) => {
             try {
@@ -156,6 +185,14 @@ function buildPalette() {
 document.addEventListener('DOMContentLoaded', () => {
     buildPalette();
 
+    const captionInput = document.getElementById('draw-caption');
+    const captionCount = document.getElementById('draw-caption-count');
+    if (captionInput) {
+        captionInput.addEventListener('input', () => {
+            captionCount.textContent = `${captionInput.value.length}/50`;
+        });
+    }
+
     document.getElementById('draw-undo').addEventListener('click', undoDraw);
 
     document.getElementById('draw-clear').addEventListener('click', () => {
@@ -179,12 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btn.textContent = 'Uploading...';
 
-        const publicUrl = await submitDrawing(pendingColor || { bg: '#fff9a3' });
+        const caption = (document.getElementById('draw-caption')?.value || '').trim();
+        const publicUrl = await submitDrawing();
         closeDrawMode();
         closePostModal();
 
         if (publicUrl) {
-            startPlacingDrawing(publicUrl, pendingColor);
+            startPlacingDrawing(publicUrl, pendingColor, caption);
         } else {
             alert('Upload failed. Please try again.');
         }
@@ -194,12 +232,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-draw').addEventListener('click', () => {
         if (!pendingColor) return;
+        const textInput = document.getElementById('post-input');
+        if (textInput.value.trim()) {
+            if (!confirm('Switch to Draw mode? Your text will be lost.')) return;
+        }
         document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-draw').classList.add('active');
         openDrawMode(pendingColor);
     });
 
     document.getElementById('btn-text').addEventListener('click', () => {
+        if (hasDrawingContent()) {
+            if (!confirm('Switch to Text mode? Your drawing will be lost.')) return;
+        }
         document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-text').classList.add('active');
         closeDrawMode();

@@ -62,6 +62,7 @@ function dropNote(e) {
     const text = board.dataset.pendingText || '';
     const imageUrl = board.dataset.pendingImageUrl || null;
     const type = board.dataset.pendingType || 'text';
+    const caption = board.dataset.pendingCaption || '';
     const colorSnapshot = { ...activeColor };
 
     if (ghost) ghost.remove();
@@ -73,8 +74,9 @@ function dropNote(e) {
     document.querySelectorAll('.sticky').forEach(n => n.style.pointerEvents = '');
     delete board.dataset.pendingImageUrl;
     delete board.dataset.pendingType;
+    delete board.dataset.pendingCaption;
 
-    const postData = { text, x, y, author: currentUserName, color: colorSnapshot, type, imageUrl, postedAt: Date.now() };
+    const postData = { text, x, y, author: currentUserName, color: colorSnapshot, type, imageUrl, caption, postedAt: Date.now() };
     fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,7 +133,7 @@ function openViewModal(p) {
     document.getElementById('view-author').textContent = p.author;
     const viewText = document.getElementById('view-text');
     if (p.type === 'drawing' && p.imageUrl) {
-        viewText.innerHTML = `<img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />`;
+        viewText.innerHTML = `<img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />${p.caption ? `<div style="margin-top:8px;font-style:italic;font-size:12px;color:#555;text-align:center;">${p.caption}</div>` : ''}`;
     } else {
         viewText.textContent = p.text || '';
     }
@@ -297,7 +299,7 @@ searchClear.addEventListener('click', () => {
     applySearch('');
 });
 
-function startPlacingDrawing(imageUrl, color) {
+function startPlacingDrawing(imageUrl, color, caption) {
     placing = true;
     activeColor = color;
     const ghost = document.createElement('div');
@@ -314,6 +316,7 @@ function startPlacingDrawing(imageUrl, color) {
     board.appendChild(ghost);
     board.dataset.pendingImageUrl = imageUrl;
     board.dataset.pendingType = 'drawing';
+    board.dataset.pendingCaption = caption || '';
     document.querySelectorAll('.sticky').forEach(n => n.style.pointerEvents = 'none');
     board.addEventListener('mousemove', moveGhost);
     board.addEventListener('click', dropNote);
