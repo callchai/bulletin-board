@@ -40,15 +40,31 @@ def get_posts():
 
 @app.route('/api/drawing-upload', methods=['POST'])
 def drawing_upload():
+    """Holy nuts this was a pain"""
     import uuid
     filename = f"drawing-{uuid.uuid4().hex}.png"
-    blob_data = request.data  # raw PNG bytes
+    blob_data = request.data
     storage_client = storage.Client()
     bucket = storage_client.bucket(BUCKET_NAME)
     blob = bucket.blob(filename)
     blob.upload_from_string(blob_data, content_type='image/png')
-    blob.make_public()
-    return jsonify({'publicUrl': blob.public_url}), 200
+    public_url = f'/api/drawing/{filename}'
+    return jsonify({'publicUrl': public_url}), 200
+
+@app.route('/api/drawing/<filename>', methods=['GET'])
+def serve_drawing(filename):
+    """
+    Had to actual read documentation https://docs.cloud.google.com/appengine/docs/flexible/using-cloud-storage
+    And for flask https://flask.palletsprojects.com/en/stable/api/#flask.send_file
+    ts pmo
+    """
+    from flask import send_file
+    import io
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob(filename)
+    data = blob.download_as_bytes()
+    return send_file(io.BytesIO(data), mimetype='image/png')
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
