@@ -742,7 +742,6 @@ body {
     line-height: 1.7;
     box-shadow: 4px 6px 20px rgba(0,0,0,0.25);
     word-break: break-word;
-    white-space: pre-wrap;
     transform: scale(0.85);
     transition: transform 0.2s ease;
 }
@@ -756,6 +755,7 @@ body {
     font-weight: bold;
     opacity: 0.6;
     margin-bottom: 2px;
+    line-height: 1.2;
 }
 
 #view-close {
@@ -1076,6 +1076,8 @@ body.is-posting .sticky:hover {
 }
 #view-timestamps {
     margin-top: 0;
-    line-height: 1.4;
+    line-height: 1.2;
     margin-bottom: 8px;
+    font-size: 10px;
+    opacity: 0.5;
 }
