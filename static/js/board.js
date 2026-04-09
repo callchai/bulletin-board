@@ -1,7 +1,4 @@
 const board = document.getElementById('board');
-const postId = p.id;
-const voter = currentUserName;
-let userVote = p.userVote || null;
 let placing = false, activeEl = null, activeColor = null;
 let currentUserName = null;
 
@@ -165,43 +162,46 @@ function openViewModal(p) {
     }
 
     modal.classList.add('show');
+    const postId = p.id;
+    const voter = currentUserName;
+    let userVote = p.userVote || null;
+
+    function renderVoteButtons() {
+        document.getElementById('vote-up').style.fontWeight = userVote === 'up' ? 'bold' : 'normal';
+        document.getElementById('vote-down').style.fontWeight = userVote === 'down' ? 'bold' : 'normal';
+        document.getElementById('view-score').textContent = `Score: ${p.score || 0}`;
+    }
+
+        document.getElementById('vote-up').onclick = () => {
+        fetch(`/api/posts/${postId}/vote`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({direction: 'up', voter})
+        }).then(r => r.json()).then(res => {
+            p.score = res.score;
+            userVote = res.userVote;
+            renderVoteButtons();
+            const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
+            if (noteEl) noteEl.textContent = scoreLabel(res.score);
+        });
+    };
+
+    document.getElementById('vote-down').onclick = () => {
+        fetch(`/api/posts/${postId}/vote`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({direction: 'down', voter})
+        }).then(r => r.json()).then(res => {
+            p.score = res.score;
+            userVote = res.userVote;
+            renderVoteButtons();
+            const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
+            if (noteEl) noteEl.textContent = scoreLabel(res.score);
+        });
+    };
+
+    renderVoteButtons();
 }
-
-function renderVoteButtons() {
-    document.getElementById('vote-up').style.fontWeight = userVote === 'up' ? 'bold' : 'normal';
-    document.getElementById('vote-down').style.fontWeight = userVote === 'down' ? 'bold' : 'normal';
-    document.getElementById('view-score').textContent = `Score: ${p.score || 0}`;
-}
-
-document.getElementById('vote-up').onclick = () => {
-    fetch(`/api/posts/${postId}/vote`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({direction: 'up', voter})
-    }).then(r => r.json()).then(res => {
-        p.score = res.score;
-        userVote = res.userVote;
-        renderVoteButtons();
-        const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
-        if (noteEl) noteEl.textContent = scoreLabel(res.score);
-    });
-};
-
-document.getElementById('vote-down').onclick = () => {
-    fetch(`/api/posts/${postId}/vote`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({direction: 'down', voter})
-    }).then(r => r.json()).then(res => {
-        p.score = res.score;
-        userVote = res.userVote;
-        renderVoteButtons();
-        const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
-        if (noteEl) noteEl.textContent = scoreLabel(res.score);
-    });
-};
-
-renderVoteButtons();
 
 document.getElementById('view-close').addEventListener('click', () => {
     document.getElementById('view-modal').classList.remove('show');
