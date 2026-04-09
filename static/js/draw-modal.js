@@ -9,10 +9,10 @@ function initDrawCanvas() {
     drawCtx = drawCanvas.getContext('2d');
     drawCtx.fillStyle = '#fff9a3';
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-    saveDrawState();
 
     if (canvasInitialized) return;
     canvasInitialized = true;
+    saveDrawState();
 
     let painting = false;
 
@@ -96,27 +96,17 @@ function updateSizePreview() {
 }
 
 async function submitDrawing(userColor) {
-    /* 
-    This function helps convert the drawing into a blob to store it in
-    the bucket. Returns a URL to the uploaded image on success, or null on failure.
-    */
+    // Ts was so hard to write.
     return new Promise((resolve) => {
         drawCanvas.toBlob(async (blob) => {
             try {
-                const res = await fetch('/api/drawing-upload-url', {
+                const res = await fetch('/api/drawing-upload', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ filename: `drawing-${Date.now()}.png` })
-                });
-                const { uploadUrl, publicUrl } = await res.json();
-
-                await fetch(uploadUrl, {
-                    method: 'PUT',
                     headers: { 'Content-Type': 'image/png' },
                     body: blob
                 });
-
-                resolve(publicUrl);
+                const { publicUrl } = await res.json();
+                resolve(publicUrl || null);
             } catch (err) {
                 console.error('Drawing upload failed:', err);
                 resolve(null);

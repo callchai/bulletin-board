@@ -38,21 +38,17 @@ def get_posts():
     response.headers['Expires'] = '0'
     return response
 
-@app.route('/api/drawing-upload-url', methods=['POST'])
-def drawing_upload_url():
-    data = request.get_json()
-    filename = data.get('filename', f'drawing-{datetime.now().timestamp()}.png')
+@app.route('/api/drawing-upload', methods=['POST'])
+def drawing_upload():
+    import uuid
+    filename = f"drawing-{uuid.uuid4().hex}.png"
+    blob_data = request.data  # raw PNG bytes
     storage_client = storage.Client()
     bucket = storage_client.bucket(BUCKET_NAME)
     blob = bucket.blob(filename)
-    upload_url = blob.generate_signed_url(
-        version='v4',
-        expiration=300,
-        method='PUT',
-        content_type='image/png'
-    )
-    public_url = f'https://storage.googleapis.com/{BUCKET_NAME}/{filename}'
-    return jsonify({'uploadUrl': upload_url, 'publicUrl': public_url})
+    blob.upload_from_string(blob_data, content_type='image/png')
+    blob.make_public()
+    return jsonify({'publicUrl': blob.public_url}), 200
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
