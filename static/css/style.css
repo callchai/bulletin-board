@@ -731,7 +731,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    width: 100%;
+    width: auto;
 }
 
 #view-note {
@@ -780,6 +780,8 @@ body {
 /* Pointer on viewing a post */
 .sticky {
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* Outline over post -- TODO: test sensitivity*/
