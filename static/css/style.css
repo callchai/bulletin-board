@@ -748,6 +748,7 @@ body {
     word-break: break-word;
     transform: scale(0.85);
     transition: transform 0.2s ease;
+    user-select: none;
 }
 
 #view-note.is-drawing {
@@ -769,20 +770,11 @@ body {
     line-height: 1.2;
 }
 
-#view-close {
-    padding: 10px 28px;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.9);
-    color: #333;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-#view-close:hover {
-    background: #fff;
+/* Display close hint*/
+#view-dismiss-hint {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    pointer-events: none;
 }
 
 /* Pointer on viewing a post */

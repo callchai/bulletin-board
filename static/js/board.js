@@ -203,10 +203,6 @@ function openViewModal(p) {
     renderVoteButtons();
 }
 
-document.getElementById('view-close').addEventListener('click', () => {
-    document.getElementById('view-modal').classList.remove('show');
-});
-
 document.getElementById('view-modal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('view-modal'))
         document.getElementById('view-modal').classList.remove('show');
