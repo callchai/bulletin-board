@@ -178,6 +178,7 @@ function buildPalette() {
             document.getElementById('draw-color').value = c;
             document.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('active'));
             swatch.classList.add('active');
+            updateSizePreview();
         });
         palette.appendChild(swatch);
     });
@@ -205,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('draw-color').addEventListener('input', () => {
         document.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('active'));
+        updateSizePreview();
     });
 
     document.getElementById('draw-cancel').addEventListener('click', () => {
