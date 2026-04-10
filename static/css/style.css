@@ -28,10 +28,10 @@ body {
 }
 
 #board {
+    user-select: none;
     width: 1600px;
     height: 900px;
     position: absolute;
-    /*top: 0; left: 0;*/
     overflow: hidden;
     transform-origin: top left;
     background: #f5f0e8;
@@ -735,6 +735,7 @@ body {
 }
 
 #view-note {
+    user-select: none;
     min-width: 220px;
     max-width: 400px;
     min-height: 160px;
@@ -748,7 +749,6 @@ body {
     word-break: break-word;
     transform: scale(0.85);
     transition: transform 0.2s ease;
-    user-select: none;
 }
 
 #view-note.is-drawing {

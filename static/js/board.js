@@ -204,7 +204,7 @@ function openViewModal(p) {
 }
 
 document.getElementById('view-modal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('view-modal'))
+    if (!document.getElementById('view-modal-content').contains(e.target))
         document.getElementById('view-modal').classList.remove('show');
 });
 
