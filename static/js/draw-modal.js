@@ -97,18 +97,12 @@ function openDrawMode(userColor) {
         const newBg = bgPicker.value;
         localStorage.setItem('bb_last_draw_bg', newBg);
         _currentDrawBg = newBg;
-
-        const current = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
         drawCtx.fillStyle = newBg;
         drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-        // Recomposite strokes over new bg
-        const temp = document.createElement('canvas');
-        temp.width = drawCanvas.width;
-        temp.height = drawCanvas.height;
-        temp.getContext('2d').putImageData(current, 0, 0);
-        drawCtx.globalCompositeOperation = 'multiply';
-        drawCtx.drawImage(temp, 0, 0);
-        drawCtx.globalCompositeOperation = 'source-over';
+        if (drawHistory.length > 1) {
+            const last = drawHistory[drawHistory.length - 1];
+            drawCtx.putImageData(last, 0, 0);
+        }
         saveDrawState();
     };
 
