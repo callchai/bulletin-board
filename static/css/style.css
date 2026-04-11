@@ -1534,19 +1534,21 @@ body.is-posting .sticky:hover {
     font-style: italic;
 }
 
-.denounce-label {
+.denounce-full-label {
     position: absolute;
-    bottom: 6px;
-    left: 0;
-    right: 0;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: bold;
     color: #ff3333;
     letter-spacing: 0.5px;
-    padding: 0 4px;
     text-transform: uppercase;
+    padding: 12px;
     pointer-events: none;
+    line-height: 1.5;
 }
 
 /* ── Banishment screen ── */

@@ -325,19 +325,10 @@ function _handleVerdict(verdict, accused, forgiveCount, banishCount) {
 }
 
 function _denounceNoteElement(el, verdict) {
-    el.style.background = '#1a1a1a';
-    el.style.color = '#ff3333';
-    el.style.setProperty('--note-bg', '#1a1a1a');
-    const authorEl = el.querySelector('.author');
-    if (authorEl) authorEl.style.color = '#ff3333';
-    const img = el.querySelector('img');
-    if (img) img.style.filter = 'grayscale(1) brightness(0.3)';
-    if (!el.querySelector('.denounce-label')) {
-        const label = document.createElement('div');
-        label.className = 'denounce-label';
-        label.textContent = 'HERETIC DENOUNCED BY THE BOARD';
-        el.appendChild(label);
-    }
+    el.style.background = '#000';
+    el.style.setProperty('--note-bg', '#000');
+    el.dataset.denounced = 'true';
+    el.innerHTML = `<div class="denounce-full-label">HERETIC HAS BEEN DENOUNCED BY THE BOARD</div>`;
 }
 
 /* This is for the banished user screen*/

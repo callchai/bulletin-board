@@ -136,8 +136,28 @@ function renderNote(p) {
 
 function openViewModal(p) {
     if (placing) return;
+
     const modal = document.getElementById('view-modal');
     const note = document.getElementById('view-note');
+
+    const noteEl = document.querySelector(`.sticky[data-id="${p.id}"]`);
+    if (noteEl && noteEl.dataset.denounced === 'true') {
+        note.style.cssText = 'background:#000; min-width:220px; max-width:400px; min-height:160px; display:flex; align-items:center; justify-content:center; padding:20px; border-radius:3px; box-shadow:4px 6px 20px rgba(0,0,0,0.25);';
+        note.className = '';
+        note.innerHTML = `<div style="color:#ff3333; font-weight:bold; font-size:13px; text-align:center; text-transform:uppercase; letter-spacing:0.5px; line-height:1.6;">HERETIC HAS BEEN DENOUNCED BY THE BOARD</div>`;
+        document.getElementById('view-author').textContent = '';
+        document.getElementById('view-author').style.display = 'none';
+        document.getElementById('view-timestamps').innerHTML = '';
+        document.getElementById('vote-bar').style.display = 'none';
+        modal.classList.add('show');
+        return;
+    }
+
+    document.getElementById('view-author').style.display = '';
+    document.getElementById('vote-bar').style.display = '';
+    note.style.cssText = '';
+    note.className = '';
+
     document.getElementById('view-author').style.color = p.color.author;
     document.getElementById('view-author').textContent = p.author;
     const viewText = document.getElementById('view-text');
@@ -177,7 +197,7 @@ function openViewModal(p) {
         document.getElementById('view-score').textContent = `Score: ${p.score || 0}`;
     }
 
-        document.getElementById('vote-up').onclick = () => {
+    document.getElementById('vote-up').onclick = () => {
         fetch(`/api/posts/${postId}/vote`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
