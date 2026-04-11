@@ -72,6 +72,15 @@ async function pollActiveTrial() {
 
         _trialState.status = trial.status;
         _trialState.votes = trial.votes || {};
+        if (_trialState.id !== trial.id) {
+            _trialState.id = trial.id;
+            _trialState.accused = trial.accused;
+            _trialState.postData = trial.postData;
+            _trialState.defense = trial.defense;
+            _trialState.startedAt = trial.startedAt;
+            _trialState.userVote = null;
+            document.getElementById('trial-banner')?.style.setProperty('--timer-pct', '100%');
+        }
 
         if (trial.status === 'pending') {
             showTrialBanner('pending');
@@ -80,7 +89,8 @@ async function pollActiveTrial() {
             }
         } else if (trial.status === 'active') {
             showTrialBanner('active');
-            showTrialModal(trial);
+            const isNewTrial = document.getElementById('trial-modal').dataset.trialId !== trial.id;
+            showTrialModal(trial, isNewTrial);
             if (!_trialState.timerInterval && trial.startedAt) {
                 startTrialCountdown(trial.id, trial.startedAt);
             }
@@ -174,7 +184,7 @@ function _submitDefense(trialId, defense, modal, submitBtn) {
 }
 
 
-function showTrialModal(trial) {
+function showTrialModal(trial, autoShow = false) {
     /* This is the one that all users (the jury) will see*/
     const modal = document.getElementById('trial-modal');
     if (!modal) return;
@@ -248,8 +258,8 @@ function showTrialModal(trial) {
     if (bEl) bEl.textContent = banish;
 
     _updateVoteButtonStyles();
-
-    modal.classList.add('show');
+    if (autoShow) modal.classList.add('show');
+    // modal.classList.add('show');
 }
 
 function _updateVoteButtonStyles() {
@@ -403,7 +413,7 @@ function showVerdictToast(verdict, accused, forgiveCount, banishCount) {
         text = `<strong>${accused}</strong> has been exiled for ${EXILE_MINUTES} minutes.`;
     }
 
-    toast.innerHTML = `<span class="verdict-toast-icon">${icon}</span> ${text}
+    toast.innerHTML = `<span class="verdict-toast-icon"></span> ${text}
         <button onclick="document.getElementById('verdict-toast').classList.remove('show')">✕</button>`;
     toast.className = `verdict-toast show verdict-${verdict}`;
     setTimeout(() => toast.classList.remove('show'), 10000);
@@ -429,4 +439,34 @@ function checkBanOnLoad() {
                 showBanishmentScreen(res.reason);
             }
         });
+}
+
+let _bannerTimerInterval = null;
+
+function showTrialBanner(status) {
+    const banner = document.getElementById('trial-banner');
+    if (!banner) return;
+    if (banner.classList.contains('show') && banner.dataset.status === status) return;
+    banner.dataset.status = status;
+    banner.classList.add('show');
+    if (status === 'pending') {
+        banner.innerHTML = `<strong>A Trial has Begun!</strong> — The accused prepares their defense...`;
+        if (_bannerTimerInterval) { clearInterval(_bannerTimerInterval); _bannerTimerInterval = null; }
+    } else {
+        banner.innerHTML = `<strong>TRIAL IN PROGRESS</strong> — Cast your judgment upon the transgressor!
+            <button onclick="document.getElementById('trial-modal').classList.add('show')" id="trial-banner-watch">Join Trial</button>`;
+        _startBannerTimer();
+    }
+}
+
+function _startBannerTimer() {
+    if (_bannerTimerInterval) return;
+    _bannerTimerInterval = setInterval(() => {
+        if (!_trialState.startedAt) return;
+        const elapsed = (Date.now() - _trialState.startedAt) / 1000;
+        const pct = Math.max(0, ((TRIAL_VOTE_SECONDS - elapsed) / TRIAL_VOTE_SECONDS) * 100);
+        const banner = document.getElementById('trial-banner');
+        if (banner) banner.style.setProperty('--timer-pct', pct + '%');
+        if (pct === 0) { clearInterval(_bannerTimerInterval); _bannerTimerInterval = null; }
+    }, 200);
 }

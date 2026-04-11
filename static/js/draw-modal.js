@@ -96,14 +96,7 @@ function openDrawMode(userColor) {
     bgPicker.oninput = () => {
         const newBg = bgPicker.value;
         localStorage.setItem('bb_last_draw_bg', newBg);
-        _currentDrawBg = newBg;
-        drawCtx.fillStyle = newBg;
-        drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-        if (drawHistory.length > 1) {
-            const last = drawHistory[drawHistory.length - 1];
-            drawCtx.putImageData(last, 0, 0);
-        }
-        saveDrawState();
+        clearDrawCanvas(newBg);
     };
 
     updateSizePreview();
