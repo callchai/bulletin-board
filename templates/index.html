@@ -242,10 +242,38 @@
 </div>
 <div id="board-wrapper">
 <div id="board"></div>
+<div id="trial-banner"></div>
+<div id="defense-modal">
+    <div id="defense-modal-content">
+        <div class="defense-cross">✝</div>
+        <h2>You Are Called Before the Board's court</h2>
+        <p>One of your posts has drawn the ire of your fellow posters. You stand accused of transgression.<br><br>
+        You have one chance to speak in your defense. Choose your words carefully.</p>
+        <textarea id="defense-input" placeholder="State your defense before the Board..." maxlength="800" rows="5"></textarea>
+        <div id="defense-word-count">0 / 100 words</div>
+        <button id="defense-submit">Submit Defense</button>
+        <p style="font-size:11px;opacity:0.6;margin-top:8px;">You may leave this blank to offer no defense.</p>
+    </div>
+</div>
+<div id="trial-modal">
+    <div id="trial-modal-content">
+        <button id="trial-modal-minimize" onclick="document.getElementById('trial-modal').classList.remove('show')" title="Minimize">— Minimize</button>
+        <div id="trial-modal-body"></div>
+    </div>
+</div>
+<div id="banishment-screen">
+    <div id="banishment-content">
+        <div class="banishment-cross">✝</div>
+        <h2 id="banishment-message">You have been BANISHED.</h2>
+        <p id="banishment-sub"></p>
+    </div>
+</div>
+<div id="verdict-toast" class="verdict-toast"></div>
 </div>
   <script src="/static/js/term-modal.js"></script>
   <script src="/static/js/post-modal.js"></script>
   <script src="/static/js/draw-modal.js"></script>
+  <script src="/static/js/trial-modal.js"></script>
   <script src="/static/js/board.js"></script>
 </body>
 </html>

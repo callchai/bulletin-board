@@ -6,6 +6,8 @@ let currentUserName = null;
 
 function initBoard(userName, userColor) {
     currentUserName = userName;
+    checkBanOnLoad();
+    startTrialPolling();
     fetch('/api/board-start')
         .then(r => r.json())
         .then(data => {
@@ -127,6 +129,9 @@ function renderNote(p) {
 
     note.addEventListener('click', () => openViewModal(p));
     board.appendChild(note);
+    if (p.denounced) {
+        _denounceNoteElement(note, 'banished');
+    }
 }
 
 function openViewModal(p) {
@@ -183,6 +188,7 @@ function openViewModal(p) {
             renderVoteButtons();
             const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
             if (noteEl) noteEl.textContent = scoreLabel(res.score);
+            checkForTrial(postId, res.score, p.author);
         });
     };
 
@@ -197,6 +203,7 @@ function openViewModal(p) {
             renderVoteButtons();
             const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
             if (noteEl) noteEl.textContent = scoreLabel(res.score);
+            checkForTrial(postId, res.score, p.author);
         });
     };
 

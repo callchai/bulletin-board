@@ -1135,3 +1135,511 @@ body.is-posting .sticky:hover {
     min-width: 70px;
     text-align: center;
 }
+
+/* Trial functions designs */
+#trial-banner {
+    position: fixed;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #3a0000, #7a0000);
+    color: #ffd700;
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-family: "Georgia", serif;
+    z-index: 19000;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    white-space: nowrap;
+    box-shadow: 0 0 30px rgba(255, 60, 0, 0.7), 0 4px 20px rgba(0,0,0,0.5);
+    transition: bottom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: trialBannerPulse 2s ease-in-out infinite;
+}
+
+#trial-banner.show {
+    bottom: 24px;
+}
+
+@keyframes trialBannerPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(255,60,0,0.7), 0 4px 20px rgba(0,0,0,0.5); }
+    50%       { box-shadow: 0 0 50px rgba(255,60,0,1),   0 4px 30px rgba(0,0,0,0.6); }
+}
+
+#trial-banner-watch {
+    padding: 6px 14px;
+    border: 1.5px solid #ffd700;
+    border-radius: 8px;
+    background: rgba(255,215,0,0.15);
+    color: #ffd700;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#trial-banner-watch:hover {
+    background: rgba(255,215,0,0.3);
+}
+
+#defense-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(60,0,0,0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#defense-modal.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+#defense-modal-content {
+    background: #1a0000;
+    border: 3px solid #cc0000;
+    border-radius: 16px;
+    max-width: 520px;
+    width: 90%;
+    padding: 36px 40px;
+    text-align: center;
+    color: #ffd0d0;
+    box-shadow: 0 0 40px rgba(200,0,0,0.6), 0 10px 40px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.defense-cross {
+    font-size: 2.5rem;
+    color: #cc0000;
+    opacity: 0.8;
+}
+
+#defense-modal-content h2 {
+    font-family: "Georgia", serif;
+    font-size: 1.6rem;
+    color: #ff6666;
+}
+
+#defense-modal-content p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #ffd0d0;
+    opacity: 0.85;
+}
+
+#defense-input {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #cc0000;
+    border-radius: 8px;
+    background: #2a0000;
+    color: #ffd0d0;
+    font-size: 14px;
+    font-family: sans-serif;
+    resize: vertical;
+    outline: none;
+}
+
+#defense-input:focus {
+    border-color: #ff4444;
+}
+
+#defense-word-count {
+    font-size: 12px;
+    color: #ff8888;
+    text-align: right;
+}
+
+#defense-submit {
+    padding: 14px 32px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #cc0000, #880000);
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(200,0,0,0.5);
+    transition: transform 0.15s, box-shadow 0.2s;
+}
+
+#defense-submit:hover:not(:disabled) {
+    transform: scale(1.04);
+    box-shadow: 0 0 30px rgba(200,0,0,0.8);
+}
+
+#defense-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── Trial modal ── */
+#trial-modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(20,10,0,0.75);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 18000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#trial-modal.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+#trial-modal-content {
+    background: #fdf6e3;
+    border: 4px solid #8b0000;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 760px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 28px 32px;
+    box-shadow: 0 0 40px rgba(139,0,0,0.5), 0 10px 40px rgba(0,0,0,0.4);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#trial-modal-minimize {
+    position: absolute;
+    top: 12px; right: 14px;
+    padding: 5px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    color: #888;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#trial-modal-minimize:hover {
+    background: #f5f5f5;
+}
+
+.trial-header-text {
+    text-align: center;
+}
+
+.trial-gavel {
+    font-size: 2rem;
+}
+
+.trial-header-text h2 {
+    font-family: "Georgia", serif;
+    font-size: 1.8rem;
+    color: #8b0000;
+    margin: 6px 0 8px;
+}
+
+.trial-subtext {
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.trial-content-cols {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.trial-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trial-right {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    border-left: 2px solid #e8d0a0;
+    padding-left: 20px;
+}
+
+.trial-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #8b0000;
+    opacity: 0.7;
+    font-weight: bold;
+}
+
+.trial-exhibit {
+    border-radius: 3px;
+    padding: 12px;
+    box-shadow: 2px 3px 10px rgba(0,0,0,0.2);
+    min-height: 80px;
+    max-height: 200px;
+    overflow-y: auto;
+    word-break: break-word;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.trial-exhibit-author {
+    font-size: 11px;
+    font-weight: bold;
+    opacity: 0.6;
+    margin-bottom: 6px;
+}
+
+.trial-defense-box {
+    border: 1.5px solid #d4af37;
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: #fffbee;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.trial-defense-box.pending-defense {
+    border-color: #aaa;
+    color: #999;
+    background: #f9f9f9;
+}
+
+.trial-timer {
+    font-family: "Georgia", serif;
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #8b0000;
+    line-height: 1;
+    transition: color 0.3s;
+    min-width: 80px;
+    text-align: center;
+}
+
+.trial-timer.trial-timer-urgent {
+    color: #cc0000;
+    animation: timerUrgent 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes timerUrgent {
+    from { transform: scale(1);    color: #cc0000; }
+    to   { transform: scale(1.08); color: #ff2222; }
+}
+
+.trial-vote-counts {
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.9;
+    color: #333;
+}
+
+.trial-forgive-count { color: #2a7a3b; }
+.trial-banish-count  { color: #8b0000; }
+
+.trial-vote-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.trial-vote-btn {
+    padding: 10px 16px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.trial-vote-btn.forgive {
+    background: #e8f5e9;
+    color: #2a7a3b;
+    border-color: #a5d6a7;
+}
+
+.trial-vote-btn.forgive:hover, .trial-vote-btn.forgive.active {
+    background: #2a7a3b;
+    color: #fff;
+    border-color: #2a7a3b;
+}
+
+.trial-vote-btn.banish {
+    background: #fff0f0;
+    color: #8b0000;
+    border-color: #ef9a9a;
+}
+
+.trial-vote-btn.banish:hover, .trial-vote-btn.banish.active {
+    background: #8b0000;
+    color: #fff;
+    border-color: #8b0000;
+}
+
+.trial-abstain-note {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+}
+
+.trial-accused-notice {
+    background: #fff0f0;
+    border: 1px solid #ffaaaa;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #8b0000;
+    text-align: center;
+    font-style: italic;
+}
+
+.denounce-label {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9px;
+    font-weight: bold;
+    color: #ff3333;
+    letter-spacing: 0.5px;
+    padding: 0 4px;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+/* ── Banishment screen ── */
+#banishment-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #0d0000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+#banishment-screen.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+#banishment-content {
+    text-align: center;
+    padding: 40px;
+    max-width: 500px;
+}
+
+.banishment-cross {
+    font-size: 4rem;
+    color: #cc0000;
+    margin-bottom: 20px;
+    display: block;
+    animation: crossPulse 2s ease-in-out infinite;
+}
+
+@keyframes crossPulse {
+    0%, 100% { opacity: 0.7; transform: scale(1);    }
+    50%       { opacity: 1;   transform: scale(1.08); }
+}
+
+#banishment-message {
+    font-family: "Georgia", serif;
+    font-size: 2.5rem;
+    color: #cc0000;
+    margin-bottom: 20px;
+}
+
+#banishment-sub {
+    font-size: 1.1rem;
+    color: #ff9999;
+    line-height: 1.7;
+}
+
+/* ── Verdict toast ── */
+.verdict-toast {
+    position: fixed;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: "Georgia", serif;
+    z-index: 19500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    transition: bottom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.verdict-toast.show {
+    bottom: 80px;
+    pointer-events: all;
+}
+
+.verdict-toast button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    opacity: 0.7;
+    padding: 0 4px;
+}
+
+.verdict-toast-icon {
+    font-size: 1.3rem;
+}
+
+.verdict-toast.verdict-forgiven {
+    background: #e8f5e9;
+    border: 2px solid #2a7a3b;
+    color: #1a4a2b;
+}
+
+.verdict-toast.verdict-banished {
+    background: #1a0000;
+    border: 2px solid #cc0000;
+    color: #ff9999;
+}
+
+.verdict-toast.verdict-exiled {
+    background: #1a1000;
+    border: 2px solid #cc7700;
+    color: #ffcc88;
+}
+
+.verdict-toast button {
+    color: inherit;
+}

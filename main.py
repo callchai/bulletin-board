@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from google.cloud import firestore, storage
 from datetime import datetime, timezone
+import threading
 
 app = Flask(__name__)
 db = firestore.Client()
@@ -27,6 +28,7 @@ def get_posts():
         d = p.to_dict()
         d['id'] = p.id
         d['score'] = d.get('score', 0)
+        d['denounced'] = d.get('denounced', False)
         d['zIndex'] = z
         z += 1
         ts = d.pop('timestamp', None)
@@ -122,6 +124,183 @@ def vote_post(post_id):
     score = sum(1 if v == 'up' else -1 for v in votes.values())
     ref.update({'votes': votes, 'score': score})
     return jsonify({'score': score, 'userVote': votes.get(voter, None)})
+
+# The follow is for the Trial feature
+# Calls from firestore
+@app.route('/api/trials/active', methods=['GET'])
+def get_active_trial():
+    trials = db.collection('trials').where('status', 'in', ['pending', 'active']).stream()
+    for t in trials:
+        d = t.to_dict()
+        d['id'] = t.id
+        for field in ('startedAt', 'concludedAt'):
+            if d.get(field):
+                d[field] = int(d[field].timestamp() * 1000)
+        return jsonify(d)
+    return jsonify(None)
+
+@app.route('/api/trials', methods=['POST'])
+def start_trial():
+    existing = list(db.collection('trials').where('status', 'in', ['pending', 'active']).stream())
+    if existing:
+        return jsonify({'queued': True}), 200
+
+    data = request.get_json()
+    post_id = data.get('postId')
+    post_ref = db.collection('posts').document(post_id)
+    post_doc = post_ref.get()
+    if not post_doc.exists:
+        return jsonify({'error': 'post not found'}), 404
+
+    post_data = post_doc.to_dict()
+    accused = post_data.get('author')
+
+    banned_doc = db.collection('banned').document(accused).get()
+    if banned_doc.exists:
+        return jsonify({'already_banned': True}), 200
+
+    same = list(db.collection('trials').where('postId', '==', post_id).stream())
+    if same:
+        return jsonify({'duplicate': True}), 200
+
+    trial_ref = db.collection('trials').document()
+    trial_ref.set({
+        'postId': post_id,
+        'accused': accused,
+        'postData': {
+            'text': post_data.get('text', ''),
+            'type': post_data.get('type', 'text'),
+            'imageUrl': post_data.get('imageUrl', None),
+            'caption': post_data.get('caption', ''),
+            'color': post_data.get('color', {}),
+            'author': accused,
+            'score': post_data.get('score', 0),
+        },
+        'status': 'pending',
+        'defense': None,
+        'votes': {},
+        'startedAt': firestore.SERVER_TIMESTAMP,
+        'concludedAt': None,
+        'verdict': None,
+    })
+    return jsonify({'id': trial_ref.id}), 201
+
+@app.route('/api/trials/<trial_id>/defense', methods=['POST'])
+def submit_defense(trial_id):
+    data = request.get_json()
+    defense = data.get('defense', '').strip()
+    if len(defense.split()) > 100:
+        return jsonify({'error': 'Too many words'}), 400
+    ref = db.collection('trials').document(trial_id)
+    doc = ref.get()
+    if not doc.exists:
+        return jsonify({'error': 'not found'}), 404
+    d = doc.to_dict()
+    if d['status'] != 'pending':
+        return jsonify({'error': 'trial not pending'}), 400
+    ref.update({
+        'defense': defense if defense else '(The accused offers no defense.)',
+        'status': 'active',
+        'startedAt': firestore.SERVER_TIMESTAMP,
+    })
+    return jsonify({'ok': True})
+
+@app.route('/api/trials/<trial_id>/vote', methods=['POST'])
+def vote_trial(trial_id):
+    data = request.get_json()
+    voter = data.get('voter')
+    direction = data.get('direction')
+    if direction not in ('forgive', 'banish') or not voter:
+        return jsonify({'error': 'invalid'}), 400
+    ref = db.collection('trials').document(trial_id)
+    doc = ref.get()
+    if not doc.exists:
+        return jsonify({'error': 'not found'}), 404
+    d = doc.to_dict()
+    if d['status'] != 'active':
+        return jsonify({'error': 'trial not active'}), 400
+    if voter == d['accused']:
+        return jsonify({'error': 'accused cannot vote'}), 403
+    votes = d.get('votes', {})
+    if votes.get(voter) == direction:
+        del votes[voter] 
+    else:
+        votes[voter] = direction
+    ref.update({'votes': votes})
+    forgive = sum(1 for v in votes.values() if v == 'forgive')
+    banish  = sum(1 for v in votes.values() if v == 'banish')
+    return jsonify({'forgive': forgive, 'banish': banish, 'userVote': votes.get(voter, None)})
+
+@app.route('/api/trials/<trial_id>/conclude', methods=['POST'])
+def conclude_trial(trial_id):
+    ref = db.collection('trials').document(trial_id)
+    doc = ref.get()
+    if not doc.exists:
+        return jsonify({'error': 'not found'}), 404
+    d = doc.to_dict()
+    if d['status'] == 'concluded':
+        return jsonify({'verdict': d['verdict']})
+
+    votes = d.get('votes', {})
+    forgive = sum(1 for v in votes.values() if v == 'forgive')
+    banish  = sum(1 for v in votes.values() if v == 'banish')
+
+    if forgive > banish:
+        verdict = 'forgiven'
+    elif banish > forgive:
+        verdict = 'banished'
+    else:
+        verdict = 'exiled'
+
+    accused = d['accused']
+    from datetime import timedelta
+
+    if verdict == 'banished':
+        db.collection('banned').document(accused).set({
+            'until': None,
+            'reason': 'banished',
+            'trialId': trial_id,
+        })
+        _denounce_posts(accused)
+
+    elif verdict == 'exiled':
+        exile_until = datetime.now(timezone.utc) + timedelta(minutes=5)
+        db.collection('banned').document(accused).set({
+            'until': exile_until,
+            'reason': 'exiled',
+            'trialId': trial_id,
+        })
+        _denounce_posts(accused)
+
+    ref.update({
+        'status': 'concluded',
+        'verdict': verdict,
+        'concludedAt': firestore.SERVER_TIMESTAMP,
+    })
+    return jsonify({'verdict': verdict, 'forgive': forgive, 'banish': banish})
+
+def _denounce_posts(author):
+    posts = db.collection('posts').where('author', '==', author).stream()
+    batch = db.batch()
+    for p in posts:
+        batch.update(p.reference, {'denounced': True})
+    batch.commit()
+
+@app.route('/api/banned/<username>', methods=['GET'])
+def check_banned(username):
+    doc = db.collection('banned').document(username).get()
+    if not doc.exists:
+        return jsonify({'banned': False})
+    d = doc.to_dict()
+    until = d.get('until')
+    if until and datetime.now(timezone.utc) > until:
+        db.collection('banned').document(username).delete()
+        return jsonify({'banned': False})
+    return jsonify({
+        'banned': True,
+        'reason': d.get('reason', 'banished'),
+        'until': int(until.timestamp() * 1000) if until else None,
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
