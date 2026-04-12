@@ -128,6 +128,7 @@ function renderNote(p) {
     }
 
     board.appendChild(note);
+    if (p.score >= 5) note.classList.add('righteous');
     if (p.denounced) {
         _denounceNoteElement(note, 'banished');
     } else {
@@ -306,6 +307,7 @@ setInterval(() => {
                     const scoreEl = document.querySelector(`.sticky[data-id="${p.id}"] .note-score`);
                     if (scoreEl) scoreEl.textContent = scoreLabel(p.score);
                     const noteEl = document.querySelector(`.sticky[data-id="${p.id}"]`);
+                    if (noteEl) noteEl.classList.toggle('righteous', p.score >= 5);
                     if (noteEl && noteEl.dataset.denounced !== 'true') noteEl.onclick = () => openViewModal(p);
                 }
             });

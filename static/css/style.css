@@ -1647,3 +1647,13 @@ body.is-posting .sticky:hover {
 .sticky[data-denounced="true"]:hover {
     outline: none;
 }
+/*Righetous affect*/
+.sticky.righteous {
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.15), 0 0 12px 4px rgba(255, 215, 0, 0.6);
+    animation: righteousGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes righteousGlow {
+    from { box-shadow: 2px 3px 8px rgba(0,0,0,0.15), 0 0 10px 3px rgba(255, 215, 0, 0.5); }
+    to   { box-shadow: 2px 3px 8px rgba(0,0,0,0.15), 0 0 20px 8px rgba(255, 215, 0, 0.85); }
+}
