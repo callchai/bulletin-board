@@ -195,7 +195,7 @@ function openViewModal(p) {
     modal.classList.add('show');
     const postId = p.id;
     const voter = currentUserName;
-    let userVote = p.userVote || null;
+    let userVote = localStorage.getItem(`vote_${postId}_${voter}`) || null;
 
     function renderVoteButtons() {
         document.getElementById('vote-up').style.fontWeight = userVote === 'up' ? 'bold' : 'normal';
@@ -211,6 +211,7 @@ function openViewModal(p) {
         }).then(r => r.json()).then(res => {
             p.score = res.score;
             userVote = res.userVote;
+            localStorage.setItem(`vote_${postId}_${voter}`, userVote || '');
             renderVoteButtons();
             const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
             if (noteEl) noteEl.textContent = scoreLabel(res.score);
@@ -226,6 +227,7 @@ function openViewModal(p) {
         }).then(r => r.json()).then(res => {
             p.score = res.score;
             userVote = res.userVote;
+            localStorage.setItem(`vote_${postId}_${voter}`, userVote || '');
             renderVoteButtons();
             const noteEl = document.querySelector(`.sticky[data-id="${postId}"] .note-score`);
             if (noteEl) noteEl.textContent = scoreLabel(res.score);
