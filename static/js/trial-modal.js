@@ -81,8 +81,7 @@ async function pollActiveTrial() {
             }
         } else if (trial.status === 'active') {
             showTrialBanner('active');
-            const isNewTrial = document.getElementById('trial-modal').dataset.trialId !== trial.id;
-            showTrialModal(trial, isNewTrial);
+            showTrialModal(trial, false);
             if (!_trialState.timerInterval && trial.startedAt) {
                 startTrialCountdown(trial.id, trial.startedAt);
             }
@@ -226,14 +225,14 @@ function showTrialModal(trial, autoShow = false) {
                     <div class="trial-section-label">Judgment</div>
                     <div id="trial-timer-display" class="trial-timer">30</div>
                     <div class="trial-vote-counts">
-                        <div class="trial-forgive-count">Forgive: <strong id="trial-forgive-num">0</strong></div>
-                        <div class="trial-banish-count">Banish: <strong id="trial-banish-num">0</strong></div>
+                        <div class="trial-forgive-count">Forgiveness: <strong id="trial-forgive-num">0</strong></div>
+                        <div class="trial-banish-count">Banishment: <strong id="trial-banish-num">0</strong></div>
                     </div>
                     ${isAccused
                         ? `<div class="trial-accused-notice">You are the accused. You may not vote.</div>`
                         : `<div class="trial-vote-btns">
-                            <button class="trial-vote-btn forgive" id="btn-trial-forgive" onclick="castTrialVote('${trial.id}', 'forgive')">🕊️ Forgive</button>
-                            <button class="trial-vote-btn banish" id="btn-trial-banish" onclick="castTrialVote('${trial.id}', 'banish')">🔥 Banish</button>
+                            <button class="trial-vote-btn forgive" id="btn-trial-forgive" onclick="castTrialVote('${trial.id}', 'forgive')">Forgive</button>
+                            <button class="trial-vote-btn banish" id="btn-trial-banish" onclick="castTrialVote('${trial.id}', 'banish')">Banish</button>
                            </div>`
                     }
                     <div class="trial-abstain-note">Participation is optional.</div>
@@ -384,8 +383,7 @@ function showBanishmentScreen(verdict) {
         }, 1000);
     } else {
         msg.textContent = 'You have been BANISHED.';
-        sub.textContent = `The Board and your former posters have spoken. Your wickedness has hereby been casted out. May the Board have mercy on your soul.`;
-    }
+        sub.textContent = `Hear now the decree of the Board: your wickedness is known, your judgment rendered. You are cast out, and your place among us is no more. Pray that mercy may yet find your soul.`;    }
     if (!document.getElementById('banishment-quote')) {
         const quotes = verdict === 'exiled' ? EXILE_QUOTES : BANISHMENT_QUOTES;
         const quote = quotes[Math.floor(Math.random() * quotes.length)];
