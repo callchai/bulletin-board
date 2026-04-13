@@ -57,7 +57,7 @@
         <div id="post-type-bar">
             <button class="post-type-btn active" id="btn-text">Note</button>
             <button class="post-type-btn" id="btn-draw">Draw</button>
-            <!-- <button class="post-type-btn disabled" id="btn-image" title="WIP">Image</button> -->
+            <button class="post-type-btn disabled" id="btn-image" title="WIP">Image</button>
         </div>
         <div id="post-editor">
             <div id="post-preview-wrap">
@@ -101,6 +101,32 @@
                     <button id="draw-post">Post Drawing</button>
                 </div>
         </div>
+        <div id="image-panel" style="display:none;">
+        <div id="image-limits-notice">
+            <strong>Limits:</strong> Max <strong>5MB</strong>. Supported: JPG, PNG, GIF, WebP.
+            Images larger than 800px on a side will appear <em>truncated</em> on the board — click to view in full.
+            GIFs will not animate on the board, only when opened.
+        </div>
+        <label id="image-upload-label" for="image-file-input">
+            Choose an image or GIF
+            <input type="file" id="image-file-input" accept="image/jpeg,image/png,image/gif,image/webp" />
+        </label>
+
+        <div id="image-warning" style="display:none;"></div>
+        <div id="image-preview-area"></div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+            <label style="font-size:12px;color:#b8860b;white-space:nowrap;">Caption (optional)</label>
+            <input type="text" id="image-caption-input" maxlength="80" placeholder="Shown when viewed..."
+                style="flex:1;padding:6px 10px;border:1.5px solid #d4af37;border-radius:8px;background:#fffbee;font-size:13px;outline:none;"/>
+            <span id="image-caption-count" style="font-size:11px;color:#b8860b;opacity:0.7;white-space:nowrap;">0/80</span>
+        </div>
+
+        <div id="image-actions">
+            <button id="image-cancel-btn">Cancel</button>
+            <button id="image-post-btn" disabled>Post Image</button>
+        </div>
+    </div>
     </div>
     </div>
     <div id="view-modal">
@@ -285,5 +311,6 @@
   <script src="/static/js/draw-modal.js"></script>
   <script src="/static/js/trial-modal.js"></script>
   <script src="/static/js/board.js"></script>
+  <script src="/static/js/image-modal.js"></script>
 </body>
 </html>

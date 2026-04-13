@@ -68,6 +68,8 @@ function dropNote(e) {
     const type = board.dataset.pendingType || 'text';
     const caption = board.dataset.pendingCaption || '';
     const colorSnapshot = { ...activeColor };
+    const fileExt = board.dataset.pendingFileExt || null;
+
 
     if (ghost) ghost.remove();
     board.removeEventListener('mousemove', moveGhost);
@@ -80,7 +82,7 @@ function dropNote(e) {
     delete board.dataset.pendingType;
     delete board.dataset.pendingCaption;
 
-    const postData = { text, x, y, author: currentUserName, color: colorSnapshot, type, imageUrl, caption, postedAt: Date.now() };
+    const postData = { text, x, y, author: currentUserName, color: colorSnapshot, type, imageUrl, caption, fileExt, postedAt: Date.now() };
     fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,10 +121,29 @@ function renderNote(p) {
     note.style.cssText = `left:${p.x}px;top:${p.y}px;background:${p.color.bg};z-index:${p.zIndex || 1};`;
     note.style.setProperty('--note-bg', p.color.bg);
 
-    if (p.type === 'drawing' && p.imageUrl) {
-        note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>
-            <img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />
-            <div class="note-score" style="color:${p.color.author}">${scoreLabel(p.score)}</div>`;
+    const badgeHtml = p.fileExt ? `<div class="note-filetype-badge">.${p.fileExt}</div>` : '';
+
+    if ((p.type === 'drawing' || p.type === 'image') && p.imageUrl) {
+        const isGif = p.fileExt === 'gif';
+
+        if (isGif) {
+            const canvas = document.createElement('canvas');
+            canvas.style.cssText = 'width:100%;border-radius:2px;display:block;';
+            const img = new Image();
+            img.onload = () => {
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                canvas.getContext('2d').drawImage(img, 0, 0);
+            };
+            img.src = p.imageUrl;
+            note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${badgeHtml}<div class="note-score" style="color:${p.color.author}">${scoreLabel(p.score)}</div>`;
+            note.insertBefore(canvas, note.querySelector('.note-score'));
+        } else {
+            note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>
+                ${badgeHtml}
+                <img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />
+                <div class="note-score" style="color:${p.color.author}">${scoreLabel(p.score)}</div>`;
+        }
     } else {
         note.innerHTML = `<div class="author" style="color:${p.color.author}">${p.author}</div>${p.text}<div class="note-score" style="color:${p.color.author}">${scoreLabel(p.score)}</div>`;
     }
@@ -167,12 +188,12 @@ function openViewModal(p) {
     document.getElementById('view-author').style.color = p.color.author;
     document.getElementById('view-author').textContent = p.author;
     const viewText = document.getElementById('view-text');
-    if (p.type === 'drawing' && p.imageUrl) {
+    if ((p.type === 'drawing' || p.type === 'image') && p.imageUrl) {
         viewText.innerHTML = `<img src="${p.imageUrl}" style="width:100%;border-radius:2px;display:block;" />${p.caption ? `<div style="margin-top:8px;font-style:italic;font-size:12px;color:#555;text-align:center;">${p.caption}</div>` : ''}`;
     } else {
         viewText.textContent = p.text || '';
     }
-    note.classList.toggle('is-drawing', p.type === 'drawing');
+    note.classList.toggle('is-drawing', p.type === 'drawing' || p.type === 'image');
     note.style.background = p.color.bg;
 
     const tsEl = document.getElementById('view-timestamps');
@@ -248,6 +269,7 @@ function cleanup() {
     document.body.classList.remove('is-placing', 'is-posting');
     board.removeEventListener('mousemove', moveGhost);
     board.removeEventListener('click', dropNote);
+    delete board.dataset.pendingFileExt;
 }
 
 if (typeof name !== 'undefined' && typeof userColor !== 'undefined') {
@@ -397,6 +419,33 @@ function startPlacingDrawing(imageUrl, color, caption) {
     board.dataset.pendingImageUrl = imageUrl;
     board.dataset.pendingType = 'drawing';
     board.dataset.pendingCaption = caption || '';
+    document.querySelectorAll('.sticky').forEach(n => n.style.pointerEvents = 'none');
+    board.addEventListener('mousemove', moveGhost);
+    board.addEventListener('click', dropNote);
+    board.style.cursor = 'crosshair';
+    document.body.classList.add('is-placing');
+}
+
+function startPlacingImage(imageUrl, fileExt, color, caption) {
+    placing = true;
+    activeColor = color;
+    const ghost = document.createElement('div');
+    ghost.className = 'sticky';
+    ghost.id = 'ghost-note';
+    ghost.style.background = color.bg;
+    ghost.style.opacity = '0.85';
+    ghost.style.left = '-9999px';
+    ghost.style.top = '-9999px';
+    ghost.style.pointerEvents = 'none';
+    ghost.style.zIndex = '9999';
+    ghost.innerHTML = `<div class="author" style="color:${color.author}">${currentUserName}</div>
+        <div class="note-filetype-badge">.${fileExt}</div>
+        <img src="${imageUrl}" style="width:100%;border-radius:2px;display:block;" />`;
+    board.appendChild(ghost);
+    board.dataset.pendingImageUrl = imageUrl;
+    board.dataset.pendingType = 'image';
+    board.dataset.pendingCaption = caption || '';
+    board.dataset.pendingFileExt = fileExt;
     document.querySelectorAll('.sticky').forEach(n => n.style.pointerEvents = 'none');
     board.addEventListener('mousemove', moveGhost);
     board.addEventListener('click', dropNote);

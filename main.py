@@ -82,7 +82,8 @@ def add_post():
         'type':      data.get('type', 'text'),
         'imageUrl':  data.get('imageUrl', None),
         'caption':   data.get('caption', ''),
-        'timestamp': firestore.SERVER_TIMESTAMP
+        'timestamp': firestore.SERVER_TIMESTAMP,
+        'fileExt': data.get('fileExt', None),
     }
     doc_ref.set(post)
     return jsonify({'id': doc_ref.id}), 201
@@ -301,6 +302,42 @@ def check_banned(username):
         'reason': d.get('reason', 'banished'),
         'until': int(until.timestamp() * 1000) if until else None,
     })
+
+# The follwing is for gif/image uploading.
+@app.route('/api/image-upload', methods=['POST'])
+def image_upload():
+    import uuid
+    content_type = request.content_type or 'image/jpeg'
+    ext_map = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/gif': 'gif',
+        'image/webp': 'webp',
+    }
+    ext = ext_map.get(content_type, 'jpg')
+    filename = f"image-{uuid.uuid4().hex}.{ext}"
+    blob_data = request.data
+    if len(blob_data) > 5 * 1024 * 1024:
+        return jsonify({'error': 'File too large'}), 413
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob(filename)
+    blob.upload_from_string(blob_data, content_type=content_type)
+    public_url = f'/api/image/{filename}'
+    return jsonify({'publicUrl': public_url, 'ext': ext}), 200
+
+@app.route('/api/image/<filename>', methods=['GET'])
+def serve_image(filename):
+    from flask import send_file
+    import io
+    ext = filename.rsplit('.', 1)[-1].lower()
+    mime_map = {'jpg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp'}
+    mimetype = mime_map.get(ext, 'image/jpeg')
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob(filename)
+    data = blob.download_as_bytes()
+    return send_file(io.BytesIO(data), mimetype=mimetype)
 
 if __name__ == '__main__':
     app.run(debug=True)

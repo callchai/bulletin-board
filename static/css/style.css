@@ -1657,3 +1657,110 @@ body.is-posting .sticky:hover {
     from { box-shadow: 2px 3px 8px rgba(0,0,0,0.15), 0 0 10px 3px rgba(255, 215, 0, 0.5); }
     to   { box-shadow: 2px 3px 8px rgba(0,0,0,0.15), 0 0 20px 8px rgba(255, 215, 0, 0.85); }
 }
+/* Image upload panel */
+#image-panel {
+    flex-direction: column;
+    gap: 12px;
+}
+
+#image-limits-notice {
+    background: #fffbee;
+    border: 1.5px solid #d4af37;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #7a5a00;
+    line-height: 1.6;
+}
+
+#image-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 2px dashed #d4af37;
+    border-radius: 10px;
+    background: #fffbee;
+    cursor: pointer;
+    font-size: 14px;
+    color: #b8860b;
+    transition: background 0.2s;
+}
+
+#image-upload-label:hover {
+    background: #fdf2cc;
+}
+
+#image-upload-label input[type="file"] {
+    display: none;
+}
+
+#image-warning {
+    border: 1.5px solid #d4af37;
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+#image-preview-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+}
+
+#image-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+#image-cancel-btn {
+    padding: 10px 20px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+}
+
+#image-post-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(to bottom, #f0c674, #d4af37);
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(212,175,55,0.5);
+    transition: transform 0.15s, box-shadow 0.2s;
+}
+
+#image-post-btn:hover:not(:disabled) {
+    transform: scale(1.04);
+    box-shadow: 0 0 20px rgba(212,175,55,0.8);
+}
+
+#image-post-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* File type badge on sticky notes */
+.note-filetype-badge {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 9px;
+    font-weight: bold;
+    color: rgba(0,0,0,0.35);
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+    pointer-events: none;
+    line-height: 1;
+}

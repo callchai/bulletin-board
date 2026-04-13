@@ -7,6 +7,7 @@ const BANISHMENT_QUOTES = [
     `"You have sown wickedness, and so you shall reap the whirlwind."`,
     `"Depart from me, ye who break the commandments."`,
     `"Even the fallen may yet repent. But not today."`,
+    `"If I am to be banished for simply posting, then let death be kinder than man." - Tung Tung Tung Sahur`,
 ];
 
 const EXILE_QUOTES = [
@@ -192,7 +193,7 @@ function showTrialModal(trial, autoShow = false) {
             const bg = postData.color?.bg || '#fff9a3';
             const authorColor = postData.color?.author || '#b8a800';
             let contentHtml = '';
-            if (postData.type === 'drawing' && postData.imageUrl) {
+            if ((postData.type === 'drawing' || postData.type === 'image') && postData.imageUrl) {
                 contentHtml = `<img src="${postData.imageUrl}" style="width:100%;border-radius:2px;display:block;"/>
                     ${postData.caption ? `<div style="font-style:italic;font-size:11px;margin-top:4px;color:#555;">${postData.caption}</div>` : ''}`;
             } else {
