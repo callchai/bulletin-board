@@ -223,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-draw').classList.add('active');
+        closeImageMode();
         openDrawMode(pendingColor);
     });
 
@@ -233,5 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-text').classList.add('active');
         closeDrawMode();
+        closeImageMode();
     });
 });

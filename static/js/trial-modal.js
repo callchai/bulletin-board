@@ -202,7 +202,7 @@ function showTrialModal(trial, autoShow = false) {
             postHtml = `<div class="trial-exhibit" style="background:${bg};">
                 <div class="trial-exhibit-author" style="color:${authorColor}">${postData.author}</div>
                 ${contentHtml}
-            </div>`;
+            </div><button onclick="openTrialPostFullscreen()" class="trial-fullscreen-btn">⛶ View Full</button>`;
         }
 
         const defenseHtml = trial.defense
@@ -459,3 +459,30 @@ function showTrialBanner(status) {
     }
 }
 
+/* This function is allow a full screen
+makes the trial screen easier to read
+*/
+function openTrialPostFullscreen() {
+    const pd = _trialState.postData;
+    if (!pd) return;
+    const modal = document.getElementById('view-modal');
+    const note = document.getElementById('view-note');
+    const bg = pd.color?.bg || '#fff9a3';
+    const authorColor = pd.color?.author || '#b8860b';
+    note.style.cssText = '';
+    note.className = '';
+    note.style.background = bg;
+    document.getElementById('view-author').style.color = authorColor;
+    document.getElementById('view-author').textContent = pd.author;
+    document.getElementById('view-timestamps').innerHTML = '';
+    document.getElementById('vote-bar').style.display = 'none';
+    const viewText = document.getElementById('view-text');
+    if ((pd.type === 'drawing' || pd.type === 'image') && pd.imageUrl) {
+        note.classList.add('is-drawing');
+        viewText.innerHTML = `<img src="${pd.imageUrl}" style="width:100%;border-radius:2px;display:block;" />
+            ${pd.caption ? `<div style="margin-top:8px;font-style:italic;font-size:12px;color:#555;text-align:center;">${pd.caption}</div>` : ''}`;
+    } else {
+        viewText.textContent = pd.text || '';
+    }
+    modal.classList.add('show');
+}

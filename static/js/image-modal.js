@@ -72,6 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-image').classList.add('active');
         if (typeof closeDrawMode === 'function') closeDrawMode();
+        document.getElementById('post-editor').style.display = 'none';
+        document.getElementById('color-wheel-wrap').style.display = 'none';
         openImageMode(pendingColor);
     });
 

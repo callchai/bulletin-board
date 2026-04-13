@@ -95,6 +95,8 @@ function closePostModal() {
     document.getElementById('post-modal').classList.remove('show');
     document.body.classList.remove('is-posting');
     document.getElementById('post-input').oninput = null;
+    if (typeof closeDrawMode === 'function') closeDrawMode();
+    if (typeof closeImageMode === 'function') closeImageMode();
 }
 
 document.getElementById('post-cancel').addEventListener('click', closePostModal);
