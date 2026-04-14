@@ -258,9 +258,6 @@ function cleanup() {
     delete board.dataset.pendingFileExt;
 }
 
-if (typeof name !== 'undefined' && typeof userColor !== 'undefined') {
-    initBoard(name, userColor);
-}
 
 document.getElementById('help-btn').addEventListener('click', () => {
     const modal = document.getElementById('help-modal');

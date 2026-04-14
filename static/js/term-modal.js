@@ -125,6 +125,7 @@ enterBtn.addEventListener('click', () => {
     welcomeModal.classList.remove('show');
     setTimeout(() => { welcomeModal.style.display = 'none'; }, 300);
     showScreenToastSizeWarning();
+    initBoard(name, userColor);
 });
 
 function showWelcomeBackModal() {
@@ -137,9 +138,10 @@ function showWelcomeBackModal() {
         modal.classList.remove('show');
         setTimeout(() => { modal.style.display = 'none'; }, 300);
         showScreenToastSizeWarning();
+        initBoard(name, userColor);
     });
 }
-// Test: this should load drawings
+
 fetch('/api/posts', { cache: 'no-store' })
     .then(r => r.json())
     .then(posts => { window._preloadedPosts = posts; });
