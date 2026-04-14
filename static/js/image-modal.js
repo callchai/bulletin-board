@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 gifImg.style.cssText = 'max-width:100%;max-height:200px;border-radius:4px;object-fit:contain;';
                 previewArea.appendChild(gifImg);
                 const gifLabel = document.createElement('div');
-                gifLabel.textContent = '🎞 GIF will animate when clicked on the board.';
+                gifLabel.textContent = 'GIF will animate on the board and when viewed in full.';
                 gifLabel.style.cssText = 'font-size:11px;color:#888;margin-top:4px;text-align:center;';
                 previewArea.appendChild(gifLabel);
             } else {
