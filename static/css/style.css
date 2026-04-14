@@ -1113,6 +1113,7 @@ body.is-posting .sticky:hover {
     font-weight: bold;
     pointer-events: none;
     line-height: 1;
+    white-space: nowrap;
 }
 
 .note-filetype-badge {
@@ -1782,19 +1783,7 @@ body.is-posting .sticky:hover {
     transform: none;
 }
 
-/* File type badge on sticky notes */
-.note-filetype-badge {
-    position: absolute;
-    top: 6px;
-    right: 8px;
-    font-size: 9px;
-    font-weight: bold;
-    color: rgba(0,0,0,0.35);
-    text-transform: lowercase;
-    letter-spacing: 0.3px;
-    pointer-events: none;
-    line-height: 1;
-}
+
 .trial-fullscreen-btn {
     padding: 5px 12px;
     border: 1.5px solid #d4af37;
