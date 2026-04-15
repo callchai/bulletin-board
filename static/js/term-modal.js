@@ -155,7 +155,7 @@ function showWelcomeModal() {
 
     const welcomeModal = document.getElementById('welcome-modal');
     welcomeModal.classList.add('show');
-    showScreenToastSizeWarning();
+    //showScreenToastSizeWarning();
 }
 
 enterBtn.addEventListener('click', () => {
