@@ -35,6 +35,8 @@ function closeImageMode() {
     document.getElementById('color-wheel-wrap').style.display = '';
     document.getElementById('image-warning').style.display = 'none';
     document.getElementById('image-preview-area').innerHTML = '';
+    document.getElementById('image-post-btn').disabled = true;
+    document.getElementById('image-post-btn').textContent = 'Post Image';
     _imageFile = null;
     _imageExt = null;
     _imagePreviewUrl = null;
@@ -112,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (ext === 'gif' && file.size > IMAGE_WARN_GIF_BYTES) {
-            warnings.push(`Large GIF (${(file.size / 1024 / 1024).toFixed(1)}MB) — may load slowly.`);
+            warnings.push(`Large GIF (${(file.size / 1024 / 1024).toFixed(1)}MB). It may load slowly.`);
         }
 
         const url = URL.createObjectURL(file);
@@ -121,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = new Image();
         img.onload = () => {
             if (img.naturalWidth > IMAGE_WARN_PIXELS || img.naturalHeight > IMAGE_WARN_PIXELS) {
-                warnings.push(`Image is ${img.naturalWidth}×${img.naturalHeight}px — larger than ${IMAGE_WARN_PIXELS}px on a side. It will appear truncated on the board, but you can see it in full by clicking the note.`);
+                warnings.push(`Image is ${img.naturalWidth}×${img.naturalHeight}px, which is larger than ${IMAGE_WARN_PIXELS}px on a side. It will appear truncated on the board, but you can see it in full by clicking the note. It may require a viewer to scroll to see the whole attachment in its glory.`);
             }
 
             if (warnings.length > 0) {

@@ -96,8 +96,12 @@ function closePostModal() {
     document.getElementById('post-modal').classList.remove('show');
     document.body.classList.remove('is-posting');
     document.getElementById('post-input').oninput = null;
-    if (typeof closeDrawMode === 'function') closeDrawMode();
-    if (typeof closeImageMode === 'function') closeImageMode();
+    setTimeout(() => {
+        if (typeof closeDrawMode === 'function') closeDrawMode();
+        if (typeof closeImageMode === 'function') closeImageMode();
+        document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-text').classList.add('active');
+    }, 250);
 }
 
 document.getElementById('post-cancel').addEventListener('click', closePostModal);
