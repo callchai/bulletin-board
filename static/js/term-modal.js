@@ -2,7 +2,45 @@
 THIS IS A TEMPORARY TEST
 */
 
-// if this is not at top, everything breaks
+
+async function checkGenerationAndInit() {
+    const res = await fetch('/api/board-start');
+    const data = await res.json();
+    const serverGen = data.generation || 0;
+    const clientGen = parseInt(getCookie('bb_generation') || '-1');
+
+    if (clientGen !== serverGen) {
+        setCookie('bb_alias', '');
+        setCookie('bb_color', '');
+        setCookie('bb_generation', String(serverGen));
+        location.reload();
+        return;
+    }
+    if (!getCookie(aliasCookieName)) {
+    termsModal.classList.add('show');
+    acceptBtn.addEventListener('click', () => {
+        setCookie(aliasCookieName, 'true');
+        termsModal.classList.remove('show');
+        setTimeout(() => {
+            termsModal.style.display = 'none';
+            showWelcomeModal();
+        }, 300);
+        });
+    } else {
+        fetch(`/api/banned/${encodeURIComponent(name)}`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.banned) {
+                    showBanishmentScreen(res.reason);
+                } else {
+                    showWelcomeBackModal();
+                }
+            });
+    }
+}
+checkGenerationAndInit();
+
+
 function setCookie(name, value) {
     document.cookie = name + "=" + encodeURIComponent(value) + "; path=/";
 }
@@ -146,27 +184,7 @@ fetch('/api/posts', { cache: 'no-store' })
     .then(r => r.json())
     .then(posts => { window._preloadedPosts = posts; });
 
-if (!getCookie(aliasCookieName)) {
-    termsModal.classList.add('show');
-    acceptBtn.addEventListener('click', () => {
-        setCookie(aliasCookieName, 'true');
-        termsModal.classList.remove('show');
-        setTimeout(() => {
-            termsModal.style.display = 'none';
-            showWelcomeModal();
-        }, 300);
-        });
-} else {
-    fetch(`/api/banned/${encodeURIComponent(name)}`)
-        .then(r => r.json())
-        .then(res => {
-            if (res.banned) {
-                showBanishmentScreen(res.reason);
-            } else {
-                showWelcomeBackModal();
-            }
-        });
-}
+
 
 function showScreenToastSizeWarning() {
     const toast = document.getElementById('screen-toast-size-warning');

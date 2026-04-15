@@ -93,16 +93,18 @@ def add_post():
 def get_board_start():
     doc = db.collection('meta').document('board').get()
     if doc.exists:
-        ts = doc.to_dict().get('createdAt')
+        d = doc.to_dict()
+        ts = d.get('createdAt')
+        generation = d.get('generation', 0)
         if ts is None:
             now = datetime.now(timezone.utc)
-            db.collection('meta').document('board').set({'createdAt': now})
-            return jsonify({'startMs': int(now.timestamp() * 1000)})
-        return jsonify({'startMs': int(ts.timestamp() * 1000)})
+            db.collection('meta').document('board').set({'createdAt': now, 'generation': 0})
+            return jsonify({'startMs': int(now.timestamp() * 1000), 'generation': 0})
+        return jsonify({'startMs': int(ts.timestamp() * 1000), 'generation': generation})
     else:
         now = datetime.now(timezone.utc)
-        db.collection('meta').document('board').set({'createdAt': now})
-        return jsonify({'startMs': int(now.timestamp() * 1000)})
+        db.collection('meta').document('board').set({'createdAt': now, 'generation': 0})
+        return jsonify({'startMs': int(now.timestamp() * 1000), 'generation': 0})
     
 @app.route('/api/posts/<post_id>/vote', methods=['POST'])
 def vote_post(post_id):
