@@ -201,7 +201,6 @@ function openViewModal(p) {
 
     modal.classList.add('show');
     const postId = p.id;
-    const postId = p.id;
     const voter = currentUserName;
     let userVote = localStorage.getItem(`vote_${postId}_${voter}`) || null;
 
