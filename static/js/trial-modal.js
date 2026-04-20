@@ -8,7 +8,7 @@ const BANISHMENT_QUOTES = [
     `"Depart from me, ye who break the commandments."`,
     `"Even the fallen may yet repent. But not today."`,
     `"If I am to be banished for simply posting, then let death be kinder than man." - Tung Tung Tung Sahur`,
-    `If I were the Devil, I'd make them think that man created the Board`,
+    `"If I were the Devil, I'd make them think that man created the Board"`,
 ];
 
 const EXILE_QUOTES = [
