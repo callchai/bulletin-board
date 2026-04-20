@@ -1,13 +1,4 @@
-/*
-THIS IS A TEMPORARY TEST
-*/
-
-
 async function checkGenerationAndInit() {
-    const res = await fetch('/api/board-start');
-    const data = await res.json();
-    const serverGen = data.generation || 0;
-    const clientGen = parseInt(getCookie('bb_generation') || '-1');
     const fetchStart = Date.now();
     const [boardRes, nowRes] = await Promise.all([
         fetch('/api/board-start'),
@@ -18,6 +9,9 @@ async function checkGenerationAndInit() {
     const rtt = Date.now() - fetchStart;
     window._serverTimeOffset = nowData.nowMs - (fetchStart + rtt / 2);
 
+    const serverGen = data.generation || 0;
+    const clientGen = parseInt(getCookie('bb_generation') || '-1');
+
     if (clientGen !== serverGen) {
         setCookie('bb_alias', '');
         setCookie('bb_color', '');
@@ -26,14 +20,14 @@ async function checkGenerationAndInit() {
         return;
     }
     if (!getCookie(aliasCookieName)) {
-    termsModal.classList.add('show');
-    acceptBtn.addEventListener('click', () => {
-        setCookie(aliasCookieName, 'true');
-        termsModal.classList.remove('show');
-        setTimeout(() => {
-            termsModal.style.display = 'none';
-            showWelcomeModal();
-        }, 300);
+        termsModal.classList.add('show');
+        acceptBtn.addEventListener('click', () => {
+            setCookie(aliasCookieName, 'true');
+            termsModal.classList.remove('show');
+            setTimeout(() => {
+                termsModal.style.display = 'none';
+                showWelcomeModal();
+            }, 300);
         });
     } else {
         fetch(`/api/banned/${encodeURIComponent(name)}`)
