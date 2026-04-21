@@ -11,10 +11,10 @@ in the span of 80 seconds.
  */
 const FLOOD_QUOTES = [
     `"And the waters prevailed exceedingly upon the Board; and all the posts were covered."`,
-    `"The Board saw that the wickedness of posters was great, and every intention of posts was only evil continually."`,
+    `"The Board saw that the wickedness of posters was many, and every intention of posts was only continuos evil."`,
     `"I will blot out posters whom I have created from the face of the Board, for I am sorry that I made them." - The BOARD`,
     `"The fountains of the great deep burst forth, and the windows of the heavens were opened."`,
-    `"And all flesh died that moved on the Board — every post, every note, every attachment of every file type."`,
+    `"And all flesh died that moved on the Board; every post, every note, every attachment of every file type."`,
     `"The waters prevailed on the Board for one hundred and fifty seconds."`,
     `"I establish my covenant with you: never again shall the Board be wiped by flood... until next time."`,
     `"Every new generation deserves a clean Board."`,

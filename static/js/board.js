@@ -46,10 +46,9 @@ function initBoard(userName, userColor) {
                         const noteEl = document.querySelector(`.sticky[data-id="${p.id}"]`);
                         if (!noteEl) return;
 
-                        // Sync denounced state
                         if (p.denounced && noteEl.dataset.denounced !== 'true') {
-                            _denounceNoteElement(noteEl, 'banished');
-                            return; // skip other updates
+                            _denounceNoteElement(noteEl, p.author === currentUserName ? 'exiled' : 'banished');
+                            return;
                         }
 
                         const scoreEl = noteEl.querySelector('.note-score');
@@ -357,7 +356,7 @@ setInterval(() => {
                         if (!noteEl) return;
 
                         if (p.denounced && noteEl.dataset.denounced !== 'true') {
-                            _denounceNoteElement(noteEl, 'banished');
+                            _denounceNoteElement(noteEl, p.author === currentUserName ? 'exiled' : 'banished');
                             return;
                         }
 

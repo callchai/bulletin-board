@@ -335,9 +335,11 @@ def check_banned(username):
         return jsonify({'banned': False})
     d = doc.to_dict()
     until = d.get('until')
-    if until and datetime.now(timezone.utc) > until:
-        db.collection('banned').document(username).delete()
-        return jsonify({'banned': False})
+    if until:
+        until_aware = until.replace(tzinfo=timezone.utc) if until.tzinfo is None else until
+        if datetime.now(timezone.utc) > until_aware:
+            db.collection('banned').document(username).delete()
+            return jsonify({'banned': False})
     return jsonify({
         'banned': True,
         'reason': d.get('reason', 'banished'),
