@@ -1,4 +1,5 @@
 import functions_framework
+import json
 from google.cloud import firestore, language_v2
 from datetime import datetime, timezone
 
@@ -24,31 +25,41 @@ language_client = language_v2.LanguageServiceClient()
 
 @functions_framework.cloud_event
 def moderate_post_text(cloud_event):
-    """
-    Triggered by a Firestore write to posts/{postId}.
-    Scans text content and triggers flood if flagged.
-    """
-    data = cloud_event.data
-    post_id = data["value"]["name"].split("/")[-1]
+    raw = cloud_event.data
+    if isinstance(raw, (bytes, bytearray)):
+        data = json.loads(raw.decode("utf-8"))
+    else:
+        data = raw
 
-    # Read the post from Firestore
+    # Extract post ID from the Firestore document path
+    doc_name = data.get("value", {}).get("name", "")
+    post_id = doc_name.split("/")[-1]
+
+    if not post_id:
+        print("Could not extract post_id from:", doc_name)
+        return
+
+    print(f"Triggered for post: {post_id}")
+
     post_ref = db.collection("posts").document(post_id)
     post_doc = post_ref.get()
     if not post_doc.exists:
+        print(f"Post {post_id} not found in Firestore")
         return
 
     post = post_doc.to_dict()
 
-    # This will scan text and caption fields if they exist.
     parts = []
     if post.get("text"):
         parts.append(post["text"])
     if post.get("caption"):
         parts.append(post["caption"])
     if not parts:
+        print(f"Post {post_id} has no text to scan.")
         return
 
     text_to_scan = " ".join(parts)
+    print(f"Scanning: '{text_to_scan[:80]}'")
 
     document = language_v2.Document(
         content=text_to_scan,
@@ -63,23 +74,24 @@ def moderate_post_text(cloud_event):
 
     triggered_category = None
     for category in response.moderation_categories:
+        print(f"  {category.name}: {category.confidence:.2f}")
         if category.name in FLAGGED_CATEGORIES and category.confidence >= MODERATION_THRESHOLD:
             triggered_category = category.name
-            print(f"Post {post_id} flagged: {category.name} ({category.confidence:.2f})")
             break
 
-    # When post is pure and clean
     if not triggered_category:
+        print(f"Post {post_id} is clean.")
         return
 
-    # Check flood isn't already triggered
+    print(f"Post {post_id} FLAGGED: {triggered_category}")
+
     flood_ref = db.collection("meta").document("flood")
     flood_doc = flood_ref.get()
     flood_data = flood_doc.to_dict() if flood_doc.exists else {}
     if flood_data.get("status") == "triggered":
+        print("Flood already in progress, skipping.")
         return
 
-    # Build offending post snapshot for the warning overlay
     offending_post = {
         "postId":   post_id,
         "author":   post.get("author", "Unknown"),
@@ -91,7 +103,6 @@ def moderate_post_text(cloud_event):
         "category": triggered_category,
     }
 
-    # Flood trigger
     flood_ref.set({
         "status":        "triggered",
         "triggeredAt":   firestore.SERVER_TIMESTAMP,
@@ -100,10 +111,9 @@ def moderate_post_text(cloud_event):
         "offendingPost": offending_post,
     }, merge=True)
 
-    # Force refresh
     board_ref = db.collection("meta").document("board")
     board_doc = board_ref.get()
     current_gen = board_doc.to_dict().get("generation", 0) if board_doc.exists else 0
     board_ref.update({"generation": current_gen + 1})
 
-    print(f"Flood triggered by post {post_id} — category: {triggered_category}")
+    print(f"Flood triggered by post {post_id} — {triggered_category}")
