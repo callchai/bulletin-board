@@ -6,37 +6,35 @@ from datetime import datetime, timezone
 """
 This cloud function is used to moderate TEXT posts. It uses 
 Google Cloud Natural Language API to scan text (including captions)
-for toxicity, profanity, and sexually explicit content. If any of these
-categories are flagged above a certain rating, a flood occurs.
+for toxicity, profanity, insults, derogatory language, and sexually explicit content. 
+If any of these categories are flagged above a certain rating, a flood occurs.
 
 
 Had to read official documentation for this:
 https://docs.cloud.google.com/natural-language/docs
+https://docs.cloud.google.com/natural-language/docs/basics
+https://docs.cloud.google.com/natural-language/docs/moderating-text
+https://docs.cloud.google.com/natural-language/docs/reference/rpc/google.cloud.language.v2
 
 Also used this article for a little help
 https://medium.com/google-cloud/moderating-text-with-the-natural-language-api-5d379727da2c
 """
 
 MODERATION_THRESHOLD = 0.8
-FLAGGED_CATEGORIES = {"Toxic", "Profanity", "Sexually Explicit"}
+FLAGGED_CATEGORIES = {"Toxic", "Profanity", "Sexually Explicit", "Insult", "Derogatory"}
 
 db = firestore.Client()
 language_client = language_v2.LanguageServiceClient()
 
 @functions_framework.cloud_event
 def moderate_post_text(cloud_event):
-    raw = cloud_event.data
-    if isinstance(raw, (bytes, bytearray)):
-        data = json.loads(raw.decode("utf-8"))
-    else:
-        data = raw
-
-    # Extract post ID from the Firestore document path
-    doc_name = data.get("value", {}).get("name", "")
-    post_id = doc_name.split("/")[-1]
+    # The subject is plain text like:
+    # "documents/posts/POST_ID"
+    subject = cloud_event["subject"]
+    post_id = subject.split("/")[-1]
 
     if not post_id:
-        print("Could not extract post_id from:", doc_name)
+        print("Could not extract post_id from subject:", subject)
         return
 
     print(f"Triggered for post: {post_id}")
@@ -44,7 +42,7 @@ def moderate_post_text(cloud_event):
     post_ref = db.collection("posts").document(post_id)
     post_doc = post_ref.get()
     if not post_doc.exists:
-        print(f"Post {post_id} not found in Firestore")
+        print(f"Post {post_id} not found")
         return
 
     post = post_doc.to_dict()
@@ -117,3 +115,4 @@ def moderate_post_text(cloud_event):
     board_ref.update({"generation": current_gen + 1})
 
     print(f"Flood triggered by post {post_id} — {triggered_category}")
+    
