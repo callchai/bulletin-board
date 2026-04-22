@@ -7,6 +7,9 @@ This cloud function is used to moderate ATTACHMENT posts.
 It uses Google Cloud Vision API to scan images for inappropriate content.
 If the image is flagged above a certain rating, a flood occurs.
 
+It uses Cloud Vision's Safe Search Detection, which 
+gives likelihood ratings for various categories of content.
+
 Categories have the same severity level, so they require the same score each
 to trigger a flood.
 
@@ -19,6 +22,7 @@ Categories:
 NOTE:   Vision API can only analyze the first FRAME of GIFS,
         so we pray no one posts something that's fine in the first frame
         but inappropriate in later frames.
+        Additionally, I believe I have not made it detect text in images.
 
 Had to read official documentation for this:
 https://docs.cloud.google.com/vision/docs/features-list

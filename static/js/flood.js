@@ -175,8 +175,8 @@ function _softCloseModals() {
     document.getElementById('welcomeback-modal')?.classList.remove('show');
 }
 
-function _beginFloodRise() {
-    // param: none
+function _beginFloodRise(triggeredAtMs) {
+    // param: triggeredAtMs (number) timestamp of when the flood was triggered
     // this starts the flood rising animation
     _floodState.phase = 'rising';
     
