@@ -382,18 +382,20 @@ def serve_image(filename):
     data = blob.download_as_bytes()
     return send_file(io.BytesIO(data), mimetype=mimetype)
 
-# The following is for the flood fail safe
+# The following deals with flood status and reset.
 @app.route('/api/flood/status', methods=['GET'])
 def flood_status():
     doc = db.collection('meta').document('flood').get()
     if not doc.exists:
-        return jsonify({'status': 'idle', 'banishCount': 0, 'triggeredAt': None})
+        return jsonify({'status': 'idle', 'banishCount': 0, 'triggeredAt': None, 'offendingPost': None})
     d = doc.to_dict()
     triggered_at = d.get('triggeredAt')
     return jsonify({
-        'status':      d.get('status', 'idle'),
-        'banishCount': d.get('banishCount', 0),
-        'triggeredAt': int(triggered_at.timestamp() * 1000) if triggered_at else None,
+        'status':        d.get('status', 'idle'),
+        'banishCount':   d.get('banishCount', 0),
+        'triggeredAt':   int(triggered_at.timestamp() * 1000) if triggered_at else None,
+        'reason':        d.get('reason', None),
+        'offendingPost': d.get('offendingPost', None),
     })
 
 

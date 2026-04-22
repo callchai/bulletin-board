@@ -38,42 +38,87 @@ function startFloodPolling() {
 async function _pollFlood() {
     if (_floodState.phase !== 'idle') return;
     try {
-        const res = await fetch('/api/flood/status', { cache: 'no-store' });
+        const res  = await fetch('/api/flood/status', { cache: 'no-store' });
         const data = await res.json();
         if (data.status === 'triggered' && _floodState.phase === 'idle') {
             if (data.triggeredAt) {
-                function serverNow() { return Date.now() + (window._serverTimeOffset || 0); }
-                const age = serverNow() - data.triggeredAt;
+                const age = (Date.now() + (window._serverTimeOffset || 0)) - data.triggeredAt;
                 if (age > 3 * 60 * 1000) {
                     fetch('/api/flood/reset', { method: 'POST' }).catch(() => {});
                     return;
                 }
             }
-            _beginFloodWarning(data.triggeredAt);
+            _beginFloodWarning(data.triggeredAt, data.reason, data.offendingPost || null);
         }
     } catch (e) {
         console.warn('Flood poll error:', e);
     }
 }
 
-function _beginFloodWarning(triggeredAtMs) {
+function _beginFloodWarning(triggeredAtMs, reason, offendingPost) {
     _floodState.phase = 'warning';
-
-    // Close any open modals gracefully (don't destroy drawing progress)
     _softCloseModals();
 
-    const overlay = document.getElementById('flood-warning-overlay');
+    const overlay  = document.getElementById('flood-warning-overlay');
+    const warningBox = document.getElementById('flood-warning-box');
     const countdown = document.getElementById('flood-warning-countdown');
+
+    // The following code forces a window to show the offending post, if there
+    // is one. This is to provide context for the flood, and also to 
+    // humiliate the offender a little bit. It's also just interesting to see what
+    // the API AI deems inappropriate enough to trigger a flood.
+    const existingReveal = document.getElementById('flood-offending-reveal');
+    if (existingReveal) existingReveal.remove();
+
+    if (reason === 'moderation' && offendingPost) {
+        const bg          = offendingPost.color?.bg     || '#fff9a3';
+        const authorColor = offendingPost.color?.author || '#b8a800';
+
+        let contentHtml = '';
+        if ((offendingPost.type === 'drawing' || offendingPost.type === 'image') && offendingPost.imageUrl) {
+            contentHtml = `<img src="${offendingPost.imageUrl}"
+                style="width:100%;border-radius:2px;display:block;max-height:160px;object-fit:contain;" />
+                ${offendingPost.caption
+                    ? `<div style="font-style:italic;font-size:11px;margin-top:4px;color:#555;">${offendingPost.caption}</div>`
+                    : ''}`;
+        } else {
+            contentHtml = `<div style="font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap;">${offendingPost.text || ''}</div>`;
+        }
+
+        const revealHtml = `
+        <div id="flood-offending-reveal" style="margin-top:18px;">
+            <button id="flood-reveal-btn"
+                onclick="document.getElementById('flood-offending-post').style.display =
+                    document.getElementById('flood-offending-post').style.display === 'none' ? 'block' : 'none';
+                    this.textContent = this.textContent.includes('View') ? '▲ Hide offending post' : '▼ View offending post';"
+                style="background:rgba(74,144,217,0.15);border:1.5px solid #4a90d9;border-radius:8px;
+                       color:#7ab8f5;padding:7px 16px;cursor:pointer;font-size:13px;width:100%;margin-bottom:10px;">
+                ▼ View offending post
+            </button>
+            <div id="flood-offending-post" style="display:none;">
+                <div style="background:${bg};border-radius:3px;padding:12px;
+                            box-shadow:2px 3px 10px rgba(0,0,0,0.3);
+                            max-height:200px;overflow-y:auto;word-break:break-word;text-align:left;">
+                    <div style="font-size:11px;font-weight:bold;opacity:0.65;
+                                margin-bottom:6px;color:${authorColor};">${offendingPost.author}</div>
+                    ${contentHtml}
+                </div>
+                <div style="font-size:11px;color:#4a90d9;margin-top:6px;opacity:0.75;">
+                    Flagged for: ${offendingPost.category}
+                </div>
+            </div>
+        </div>`;
+
+        warningBox.insertAdjacentHTML('beforeend', revealHtml);
+    }
+
     overlay.classList.add('show');
 
     let secondsLeft = 20;
-
     if (triggeredAtMs) {
-        function serverNow() { return Date.now() + (window._serverTimeOffset || 0); }
-        const elapsed = Math.floor((serverNow() - triggeredAtMs) / 1000);
+        const elapsed = Math.floor((Date.now() + (window._serverTimeOffset || 0) - triggeredAtMs) / 1000);
         secondsLeft = Math.max(1, 20 - elapsed);
     }
-
     countdown.textContent = secondsLeft;
 
     _floodState.warningTimer = setInterval(() => {
@@ -82,6 +127,8 @@ function _beginFloodWarning(triggeredAtMs) {
         if (secondsLeft <= 0) {
             clearInterval(_floodState.warningTimer);
             overlay.classList.remove('show');
+            const reveal = document.getElementById('flood-offending-reveal');
+            if (reveal) reveal.remove();
             _beginFloodRise();
         }
     }, 1000);

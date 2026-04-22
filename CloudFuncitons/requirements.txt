@@ -1,3 +1,7 @@
-# these are the requirements for the main.py file for reset_board.
+# Daily reset requirements
 functions-framework==3.8.2
 google-cloud-firestore>=2.19.0
+# textflood.py requirements
+functions-framework==3.8.1
+google-cloud-firestore==2.16.0
+google-cloud-language==2.13.0
