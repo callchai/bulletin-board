@@ -49,7 +49,6 @@ function startFloodPolling() {
     _floodState.polling = true;
     setInterval(_pollFlood, 5000);
 }
-
 async function _pollFlood() {
     // param: none
     // return: none, but checks the server for flood status and initiates the flood warning if triggered
@@ -59,9 +58,19 @@ async function _pollFlood() {
         const data = await res.json();
         if (data.status === 'triggered' && _floodState.phase === 'idle') {
             if (data.triggeredAt) {
-                const age = (Date.now() + (window._serverTimeOffset || 0)) - data.triggeredAt;
+                const serverNow = Date.now() + (window._serverTimeOffset || 0);
+                const age = serverNow - data.triggeredAt;
                 if (age > 3 * 60 * 1000) {
                     fetch('/api/flood/reset', { method: 'POST' }).catch(() => {});
+                    return;
+                }
+                // This fixes a issue where a user refreshes during a flood,
+                // it causes animation errors cause it restarts a flood.
+                if (age > 20000) {
+                    _floodState.floodTriggeredAt = data.triggeredAt;
+                    _floodState.phase = 'warning';
+                    _softCloseModals();
+                    _beginFloodRise(data.triggeredAt);
                     return;
                 }
             }
@@ -79,6 +88,7 @@ function _beginFloodWarning(triggeredAtMs, reason, offendingPost) {
     // return: none, but shows the flood warning overlay with a countdown and info about the offending post
     _floodState.phase = 'warning';
     _softCloseModals();
+    _floodState.floodTriggeredAt = triggeredAtMs;
 
     const overlay  = document.getElementById('flood-warning-overlay');
     const warningBox = document.getElementById('flood-warning-box');
@@ -103,7 +113,7 @@ function _beginFloodWarning(triggeredAtMs, reason, offendingPost) {
                     ? `<div style="font-style:italic;font-size:11px;margin-top:4px;color:#555;">${offendingPost.caption}</div>`
                     : ''}`;
         } else {
-            contentHtml = `<div style="font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap;">${offendingPost.text || ''}</div>`;
+            contentHtml = `<div style="font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap;color:#333;">${offendingPost.text || ''}</div>`;
         }
 
         const revealHtml = `
@@ -150,7 +160,7 @@ function _beginFloodWarning(triggeredAtMs, reason, offendingPost) {
             overlay.classList.remove('show');
             const reveal = document.getElementById('flood-offending-reveal');
             if (reveal) reveal.remove();
-            _beginFloodRise();
+            _beginFloodRise(_floodState.floodTriggeredAt);
         }
     }, 1000);
 }
@@ -169,6 +179,7 @@ function _beginFloodRise() {
     // param: none
     // this starts the flood rising animation
     _floodState.phase = 'rising';
+    
 
     const floodEl = document.getElementById('flood-water');
     const board = document.getElementById('board');
@@ -182,12 +193,18 @@ function _beginFloodRise() {
     const DURATION_MS = 60000;
     const TICK_MS = 200;
     const steps = DURATION_MS / TICK_MS;
-    let step = 0;
+    // This is a syncing fix, attempt to make the flood level accurate across machines
+    const riseStartMs = (triggeredAtMs || Date.now()) + 20000;
+    const serverNow = Date.now() + (window._serverTimeOffset || 0);
+    const alreadyElapsedMs = Math.max(0, serverNow - riseStartMs);
+    let step = Math.floor((alreadyElapsedMs / DURATION_MS) * steps);
+
+
     let postingDisabled = false;
 
     _floodState.riseInterval = setInterval(() => {
         step++;
-        const progress = step / steps; // 0 → 1
+        const progress = step / steps;
         const currentPx = Math.floor(progress * totalHeight);
 
         floodEl.style.height = currentPx + 'px';
