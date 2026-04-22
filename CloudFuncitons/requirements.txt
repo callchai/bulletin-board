@@ -1,7 +1,12 @@
 # Daily reset requirements
 functions-framework==3.8.2
 google-cloud-firestore>=2.19.0
-# textflood.py requirements
+# moderate-post-text requirements
 functions-framework==3.8.1
 google-cloud-firestore==2.16.0
 google-cloud-language==2.13.0
+# moderate-post-attachment requirements
+functions-framework==3.*
+google-cloud-firestore==2.16.0
+google-cloud-vision==3.7.0
+google-cloud-storage==2.16.0
