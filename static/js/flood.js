@@ -152,13 +152,13 @@ function _beginFloodWarning(triggeredAtMs, reason, offendingPost) {
     const warningText = document.getElementById('flood-warning-text');
     // These are unique messages depending on the flood reason.
     if (reason === 'moderation') {
-        warningText.innerHTML = `Behold;<br><br>
+        warningText.innerHTML = `<strong>BEHOLD:</strong><br><br>
             The BOARD has been defiled.<br>
             The one responsible: <strong style="color:#ffcccc;">${offendingPost?.author || 'A sinner'}</strong><br><br>
-            A single voice has uttered that which must not be spoken,<br>
+            A single voice has uttered that which must not be spoken,
             and by their hand, all shall bear the consequence.<br><br>
             The judgment of the Board is upon you.<br>
-            And the great flood approaches.<br><br>
+            <strong>And the great flood approaches.</strong><br><br>
             Everything you have built here will be washed away.<br>
             Not one post. Not one name. Not one trace shall remain.<br><br>
             Remember this moment.<br>
