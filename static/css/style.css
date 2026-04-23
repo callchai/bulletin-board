@@ -1851,6 +1851,8 @@ and too many pages on w3schools to count (https://www.w3schools.com/)
     border-radius: 18px;
     max-width: 480px;
     width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
     padding: 40px 44px;
     text-align: center;
     color: #c8dfff;
