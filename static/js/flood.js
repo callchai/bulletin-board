@@ -87,6 +87,7 @@ function _beginFloodWarning(triggeredAtMs, reason, offendingPost) {
     // param: offendingPost (object or null) details of the post that triggered the flood, if applicable
     // return: none, but shows the flood warning overlay with a countdown and info about the offending post
     _floodState.phase = 'warning';
+    _floodState.offendingPost = offendingPost;
     _softCloseModals();
     _floodState.floodTriggeredAt = triggeredAtMs;
 
@@ -123,27 +124,55 @@ function _beginFloodWarning(triggeredAtMs, reason, offendingPost) {
                     document.getElementById('flood-offending-post').style.display === 'none' ? 'block' : 'none';
                     this.textContent = this.textContent.includes('View') ? '▲ Hide offending post' : '▼ View offending post';"
                 style="background:rgba(74,144,217,0.15);border:1.5px solid #4a90d9;border-radius:8px;
-                       color:#7ab8f5;padding:7px 16px;cursor:pointer;font-size:13px;width:100%;margin-bottom:10px;">
+                    color:#7ab8f5;padding:7px 16px;cursor:pointer;font-size:13px;width:100%;margin-bottom:10px;">
                 ▼ View offending post
             </button>
             <div id="flood-offending-post" style="display:none;">
-                <div style="background:${bg};border-radius:3px;padding:12px;
+                <div id="flood-offending-post-inner" style="background:${bg};border-radius:3px;padding:12px;
                             box-shadow:2px 3px 10px rgba(0,0,0,0.3);
                             max-height:200px;overflow-y:auto;word-break:break-word;text-align:left;">
                     <div style="font-size:11px;font-weight:bold;opacity:0.65;
                                 margin-bottom:6px;color:${authorColor};">${offendingPost.author}</div>
                     ${contentHtml}
                 </div>
-                <div style="font-size:11px;color:#4a90d9;margin-top:6px;opacity:0.75;">
-                    Flagged for: ${offendingPost.category}
+                <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+                    <div style="font-size:11px;color:#4a90d9;opacity:0.75;flex:1;">
+                        Flagged for: ${offendingPost.category}
+                    </div>
+                    <button onclick="_openOffendingPostFullscreen()" style="background:rgba(74,144,217,0.15);border:1.5px solid #4a90d9;border-radius:6px;color:#7ab8f5;padding:4px 12px;cursor:pointer;font-size:12px;">⛶ Fullscreen</button>
                 </div>
             </div>
-        </div>`;
+        </div>
+        `;
 
         warningBox.insertAdjacentHTML('beforeend', revealHtml);
     }
 
     overlay.classList.add('show');
+    const warningText = document.getElementById('flood-warning-text');
+    // These are unique messages depending on the flood reason.
+    if (reason === 'moderation') {
+        warningText.innerHTML = `Behold;<br><br>
+            The BOARD has been defiled.<br>
+            The one responsible: <strong style="color:#ffcccc;">${offendingPost?.author || 'A sinner'}</strong><br><br>
+            A single voice has uttered that which must not be spoken,<br>
+            and by their hand, all shall bear the consequence.<br><br>
+            The judgment of the Board is upon you.<br>
+            And the great flood approaches.<br><br>
+            Everything you have built here will be washed away.<br>
+            Not one post. Not one name. Not one trace shall remain.<br><br>
+            Remember this moment.<br>
+            And post… with fear.`;
+    } else {
+        warningText.innerHTML = `Therefore is Judgment proclaimed!<br>
+            <strong>The Great Flood is at hand.</strong><br><br>
+            Every post shall be swept away, and every record cast out from remembrance.
+            The posts of this age shall be unmade, as though they had never been.
+            <br><br>
+            Yet take heed; after the cleansing waters recede,
+            a new Board shall arise, unblemished and without error.<br><br>
+            Go forth then, and post more wisely, lest judgment come upon thee once more.`;
+    }
 
     let secondsLeft = 20;
     if (triggeredAtMs) {
@@ -173,6 +202,34 @@ function _softCloseModals() {
     document.getElementById('trial-modal')?.classList.remove('show');
     document.getElementById('defense-modal')?.classList.remove('show');
     document.getElementById('welcomeback-modal')?.classList.remove('show');
+}
+
+function _openOffendingPostFullscreen() {
+    // This function is just for a full screen
+    // view of the offending post that triggers Floods.
+    const post = _floodState.offendingPost;
+    if (!post) return;
+    const modal = document.getElementById('view-modal');
+    const note = document.getElementById('view-note');
+    const bg = post.color?.bg || '#fff9a3';
+    const authorColor = post.color?.author || '#b8a800';
+    note.style.cssText = '';
+    note.className = '';
+    note.style.background = bg;
+    document.getElementById('view-author').style.color = authorColor;
+    document.getElementById('view-author').textContent = post.author;
+    document.getElementById('view-author').style.display = '';
+    document.getElementById('view-timestamps').innerHTML = '';
+    document.getElementById('vote-bar').style.display = 'none';
+    const viewText = document.getElementById('view-text');
+    if ((post.type === 'drawing' || post.type === 'image') && post.imageUrl) {
+        note.classList.add('is-drawing');
+        viewText.innerHTML = `<img src="${post.imageUrl}" style="width:100%;border-radius:2px;display:block;" />
+            ${post.caption ? `<div style="margin-top:8px;font-style:italic;font-size:12px;color:#555;text-align:center;">${post.caption}</div>` : ''}`;
+    } else {
+        viewText.textContent = post.text || '';
+    }
+    modal.classList.add('show');
 }
 
 function _beginFloodRise(triggeredAtMs) {
