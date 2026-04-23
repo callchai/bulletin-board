@@ -2045,7 +2045,7 @@ and too many pages on w3schools to count (https://www.w3schools.com/)
 This is SOLELY for the demo. only appears 
 on staging version. (just a hint box with a link)
 */
-#join-hint-box {
+/* #join-hint-box {
     position: absolute;
     top: 12px;
     left: 12px;
@@ -2063,4 +2063,4 @@ on staging version. (just a hint box with a link)
 #join-hint-sub {
     font-size: 11px;
     opacity: 0.75;
-}
+} */
