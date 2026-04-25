@@ -51,6 +51,13 @@ vision_client = vision.ImageAnnotatorClient()
 
 @functions_framework.cloud_event
 def moderate_post_image(cloud_event):
+    """
+    This function is triggered by a Cloud Storage eventarc when a new image is uploaded.
+    It checks the image using Cloud Vision API's Safe Search Detection.
+    If the image is flagged for inappropriate content, it triggers a flood on the board.
+
+    :param cloud_event: The CloudEvent object containing event data.
+    """
     data = cloud_event.data
     bucket_name = data.get("bucket")
     filename = data.get("name")
@@ -80,6 +87,8 @@ def moderate_post_image(cloud_event):
     threshold_level = LIKELIHOOD_LEVELS[MODERATION_THRESHOLD]
 
     triggered_category = None
+    # These are Vision API's own categories and likelihood ratings, 
+    # which will be use to determine if the image is inappropriate
     results = {
         "adult":    vision.Likelihood(safe.adult).name,
         "violence": vision.Likelihood(safe.violence).name,

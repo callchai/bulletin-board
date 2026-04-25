@@ -3,6 +3,16 @@ from google.cloud import firestore, storage
 from datetime import datetime, timezone
 import threading
 
+"""
+this Main.py file is for the main Flask app that serves the bulletin board and handles API requests.
+The Cloud Functions in the CloudFunctions folder handle specific tasks like
+moderating images and resetting the board and are triggered by events or scheduled jobs.
+
+Files in js folder handle the frontend logic and interact with the API endpoints defined in this Flask app.
+index.html is the main HTML file that structures the frontend of the bulletin board.
+the css file in the static folder handle the styling of the frontend.
+"""
+
 app = Flask(__name__)
 db = firestore.Client()
 BUCKET_NAME = 'bulletin-board-drawings'
@@ -10,16 +20,16 @@ BUCKET_NAME = 'bulletin-board-drawings'
 
 @app.route('/')
 def index():
+    """Renders the main page of the bulletin board."""
     return render_template('index.html')
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
     """
     Fetches posts from Firestore.
+    Orders posts by timestamp and adds additional fields like score, denounced status, and zIndex for frontend rendering.
 
-    TODO:
-    Remember to test performance and index so it updates 
-    posts in actual order of creation, not retrieve time.
+    :return: A JSON response containing a list of posts with their details.
     """
     posts = db.collection('posts').order_by('timestamp').stream()
     result = []
@@ -43,7 +53,13 @@ def get_posts():
 
 @app.route('/api/drawing-upload', methods=['POST'])
 def drawing_upload():
-    """Holy nuts this was a pain"""
+    """
+    Handles the upload of drawing data as an image file to Cloud Storage. 
+    Generates a unique filename, uploads the data, and returns a public URL for the uploaded drawing.
+
+    :param request: The HTTP request object containing the drawing data in the body.
+    :return: A JSON response containing the public URL of the uploaded drawing and its file extension.
+    """
     import uuid
     filename = f"drawing-{uuid.uuid4().hex}.png"
     blob_data = request.data
@@ -59,7 +75,13 @@ def serve_drawing(filename):
     """
     Had to actual read documentation https://docs.cloud.google.com/appengine/docs/flexible/using-cloud-storage
     And for flask https://flask.palletsprojects.com/en/stable/api/#flask.send_file
-    ts pmo
+    
+    Serves the uploaded drawing image from Cloud Storage when requested by the frontend.
+    Downloads the image data from Cloud Storage and sends it as a response with the appropriate MIME type
+    for rendering on the frontend.
+
+    :param filename: The name of the drawing file to be served, extracted from the URL.
+    :return: A response containing the image data with the correct MIME type for display.
     """
     from flask import send_file
     import io
@@ -71,6 +93,13 @@ def serve_drawing(filename):
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
+    """
+    Handles the creation of a new post. Receives post data in JSON format, creates a
+    new document in the 'posts' collection in Firestore, and returns the ID of the newly created post.
+
+    :param request: The HTTP request object containing the post data in JSON format.
+    :return: A JSON response containing the ID of the newly created post and a 201 status code.
+    """
     data = request.get_json()
     doc_ref = db.collection('posts').document()
     post = {
@@ -88,9 +117,18 @@ def add_post():
     doc_ref.set(post)
     return jsonify({'id': doc_ref.id}), 201
 
-# This is for the clock
 @app.route('/api/board-start', methods=['GET'])
 def get_board_start():
+    """
+    Retrieves the board's creation time and generation number from Firestore. 
+    If the board document does not exist, it initializes it with the current 
+    time and a generation of 0.
+
+    Milliseconds are used for the frontend to handle time calculations and syncing issues.
+    (this was a nightmare to debug and fix ngl)
+
+    :return: A JSON response containing the board's creation time in milliseconds and its generation number.
+    """
     doc = db.collection('meta').document('board').get()
     if doc.exists:
         d = doc.to_dict()
@@ -108,6 +146,13 @@ def get_board_start():
     
 @app.route('/api/posts/<post_id>/vote', methods=['POST'])
 def vote_post(post_id):
+    """
+    Handles voting on a post. Receives the vote direction and voter information in JSON format,
+    updates the votes for the specified post in Firestore, and returns the updated score and user's vote.
+
+    :param post_id: The ID of the post being voted on, extracted from the URL.
+    :return: A JSON response containing the updated score of the post and the user's current vote
+    """
     data = request.get_json()
     direction = data.get('direction')
     voter = data.get('voter')
@@ -128,10 +173,15 @@ def vote_post(post_id):
     ref.update({'votes': votes, 'score': score})
     return jsonify({'score': score, 'userVote': votes.get(voter, None)})
 
-# The follow is for the Trial feature
-# Calls from firestore
 @app.route('/api/trials/active', methods=['GET'])
 def get_active_trial():
+    """
+    Handles fetching the currently active trial. Checks for any trials with a status of 'pending' or 'active',
+    and if an active trial has been running for more than 30 seconds, it automatically concludes
+    the trial based on the current votes to prevent syncing issues and trial hostage taking.
+
+    :return: A JSON response containing the details of the active trial, or null if there are no active trials.
+    """
     trials = db.collection('trials').where('status', 'in', ['pending', 'active']).stream()
     for t in trials:
         d = t.to_dict()
@@ -164,9 +214,16 @@ def get_active_trial():
 @app.route('/api/trials', methods=['POST'])
 def start_trial():
     """
-    This starts the trial. Added new thing at start to check if a flood
-    event should be trigged.
-    If there have been two banishments, a flood is triggered instead of a third trial.
+    Handles the initiation of a new trial. Checks for existing active trials, verifies the post and accused user,
+    and creates a new trial document in Firestore with the status set to 'pending'.
+
+    NOTE:   Banish count is tracked in meta/flood in Firestore. Once it hits 2, the next trial start 
+            will instead trigger a flood instead of creating a new trial. The threshold checks lives
+            here rather than in conclude_trial so the flood fires off at the moment a new trial
+            would begin, giving concluded trials times to finish.
+
+    :return: A JSON response containing the ID of the newly created trial and a 201 status code 
+            OR an error message if the trial cannot be initiated.
     """
     flood_doc = db.collection('meta').document('flood').get()
     flood_data = flood_doc.to_dict() if flood_doc.exists else {}
@@ -228,6 +285,13 @@ def start_trial():
 
 @app.route('/api/trials/<trial_id>/defense', methods=['POST'])
 def submit_defense(trial_id):
+    """
+    Handles the submission of a defense statement for an active trial. Validates the trial status and updates
+    the trial document in Firestore with the provided defense statement, changing the status to 'active'.
+
+    :param trial_id: The ID of the trial for which the defense is being submitted, extracted from the URL.
+    :return: A JSON response indicating success or an error message if the defense cannot be submitted
+    """
     data = request.get_json()
     defense = data.get('defense', '').strip()
     if len(defense.split()) > 100:
@@ -248,6 +312,13 @@ def submit_defense(trial_id):
 
 @app.route('/api/trials/<trial_id>/vote', methods=['POST'])
 def vote_trial(trial_id):
+    """
+    Handles voting on an active trial. Receives the vote direction and voter information in JSON format,
+    updates the votes for the specified trial in Firestore, and returns the updated vote counts and user's vote.
+
+    :param trial_id: The ID of the trial being voted on, extracted from the URL.
+    :return: A JSON response containing the updated counts of 'forgive' and 'banish' votes, and the user's current vote.
+    """
     data = request.get_json()
     voter = data.get('voter')
     direction = data.get('direction')
@@ -274,6 +345,13 @@ def vote_trial(trial_id):
 
 @app.route('/api/trials/<trial_id>/conclude', methods=['POST'])
 def conclude_trial(trial_id):
+    """
+    Handles the conclusion of an active trial. Updates the trial document in Firestore with the final verdict
+    and changes the status to 'concluded'.
+
+    :param trial_id: The ID of the trial being concluded, extracted from the URL.
+    :return: A JSON response containing the final verdict and vote counts.
+    """
     ref = db.collection('trials').document(trial_id)
     doc = ref.get()
     if not doc.exists:
@@ -322,6 +400,12 @@ def conclude_trial(trial_id):
     return jsonify({'verdict': verdict, 'forgive': forgive, 'banish': banish})
 
 def _denounce_posts(author):
+    """
+    Marks all posts by the specified author as denounced in Firestore. 
+    This is used when a user is banished or exiled.
+
+    :param author: The username of the author whose posts are to be denounced.
+    """
     posts = db.collection('posts').where('author', '==', author).stream()
     batch = db.batch()
     for p in posts:
@@ -330,6 +414,14 @@ def _denounce_posts(author):
 
 @app.route('/api/banned/<username>', methods=['GET'])
 def check_banned(username):
+    """
+    Checks if a user is currently banned. Retrieves the ban information
+    from Firestore and determines if the ban is still active.
+    
+    :param username: The username to check for a ban, extracted from the URL.
+    :return: A JSON response indicating whether the user is banned and the reason for the ban.
+            'until' is used for Exile status to help indicate when they can return.
+    """
     doc = db.collection('banned').document(username).get()
     if not doc.exists:
         return jsonify({'banned': False})
@@ -349,6 +441,14 @@ def check_banned(username):
 # The follwing is for gif/image uploading.
 @app.route('/api/image-upload', methods=['POST'])
 def image_upload():
+    """
+    Handles the upload of an image file to Cloud Storage. Generates a unique filename based on the content type,
+    uploads the image data, and returns a public URL for the uploaded image.
+
+    :param request: The HTTP request object containing the image data in the body and the content type header.
+    :return: A JSON response containing the public URL of the uploaded image and its file extension, 
+            or an error message if the file is too large.
+    """
     import uuid
     content_type = request.content_type or 'image/jpeg'
     ext_map = {
@@ -371,6 +471,13 @@ def image_upload():
 
 @app.route('/api/image/<filename>', methods=['GET'])
 def serve_image(filename):
+    """
+    Handles the serving of an uploaded image from Cloud Storage. Downloads the image data and sends it as a response
+    with the appropriate MIME type for rendering on the frontend.
+
+    :param filename: The name of the image file to be served, extracted from the URL.
+    :return: A response containing the image data with the correct MIME type for display.
+    """
     from flask import send_file
     import io
     ext = filename.rsplit('.', 1)[-1].lower()
@@ -385,6 +492,15 @@ def serve_image(filename):
 # The following deals with flood status and reset.
 @app.route('/api/flood/status', methods=['GET'])
 def flood_status():
+    """
+    This endpoint provides the current flood status of the board. It retrieves the flood information from Firestore,
+    including the current status, banishment count, and the time when the flood was triggered.
+    This information is used by the frontend to determine if the board is currently in a flood state
+    and to display relevant information to users.
+
+    :return: A JSON response containing the flood status, banishment count, 
+            time of flood trigger, reason for flood, and offending post if applicable.
+    """
     doc = db.collection('meta').document('flood').get()
     if not doc.exists:
         return jsonify({'status': 'idle', 'banishCount': 0, 'triggeredAt': None, 'offendingPost': None})
@@ -402,6 +518,8 @@ def flood_status():
 def _increment_banish_count():
     """
     Increments the banishment counter in meta/flood in firestore.
+
+    :return: The new banishment count after incrementing.
     """
     ref = db.collection('meta').document('flood')
     doc = ref.get()
@@ -417,8 +535,8 @@ def _increment_banish_count():
 def flood_reset():
     """
     Reset board after flood: clear posts, trials, bans, reset clock and flood state.
+    :return: A JSON response indicating that the reset was successful.
     """
-
     def delete_collection(col_ref):
         """
         Deletes a collection in Firestore in a batch.
@@ -453,7 +571,9 @@ def flood_reset():
 @app.route('/api/now', methods=['GET'])
 def server_now():
     """
-    This is an attempt to make syncing issues less bad.
+    This function provides the current server time in milliseconds.
+    It mainly serves to solve synchronization issues Users's machines
+    and the App Engine server.
     """
     now = datetime.now(timezone.utc)
     return jsonify({'nowMs': int(now.timestamp() * 1000)})

@@ -375,8 +375,10 @@ checkScreenSize();
 window.addEventListener('resize', checkScreenSize);
 
 
-// This should get new posts every second, set refresh lower for real demo
-// Now should refresh
+/*
+setInterval is used to check if the Board generation has changed (like after a reset)
+If so, reload the page to clear stale state before fetching new posts.
+*/
 setInterval(() => {
     fetch('/api/board-start', { cache: 'no-store' })
         .then(r => r.json())

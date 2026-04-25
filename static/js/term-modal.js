@@ -88,6 +88,7 @@ function getCookie(name) {
     return null;
 }
 
+// NATO alphabet code names used to generate the first part of a new user's nickname.
 const ALIAS = ['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel',
     'India','Juliet','Kilo','Lima','Mike','November','Oscar','Papa',
     'Quebec','Romeo','Sierra','Tango','Uniform','Victor','Whiskey','Xray','Yankee','Zulu'];
@@ -97,7 +98,11 @@ const COLORS = [
     {bg:'#ffd6a5',author:'#a05a00'},{bg:'#c5d8ff',author:'#1a4a9e'},
     {bg:'#f9c5d1',author:'#a0253a'},
 ];
-
+/*
+These quotes are more of a personality/styling thing.
+These are shown on the welcome screen (when the user gets their name)
+and the welcome back modal. They're also used in the home page of the Help modal.
+*/
     const QUOTES = [
         `Honor your alias, for it is your identity.`,
         `"I am fond of boards. Posters look up to us. Trolls look down on us. Boards treat us as equals,"   - Clavicular`,

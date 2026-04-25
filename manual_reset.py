@@ -1,4 +1,10 @@
-# Manual reset script
+"""
+This script was used as a manual reset for the Board before
+the flood feature and Reset job were implemented. It wipes all posts, trials, and banned users, 
+and resets the board's creation time to the current time.
+
+This script is no longer needed.
+"""
 from google.cloud import firestore
 from datetime import datetime, timezone
 

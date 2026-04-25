@@ -58,6 +58,12 @@ async function _pollFlood() {
         const data = await res.json();
         if (data.status === 'triggered' && _floodState.phase === 'idle') {
             if (data.triggeredAt) {
+                /* 
+                serverTimeOffset is used to sync the server and client clocks to avoid drift and 
+                keep syncing issues across devices less severe. serverTimeOffset is calculated on load
+                in term-modal.js by comparing the server's reported time against the local Date.now() at 
+                request time. This was a pain in the butt to figure out.
+                */
                 const serverNow = Date.now() + (window._serverTimeOffset || 0);
                 const age = serverNow - data.triggeredAt;
                 if (age > 3 * 60 * 1000) {

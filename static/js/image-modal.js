@@ -10,7 +10,7 @@ none directly
 @usage:
 When a user clicks the "image/gif" button in the post editor, openImageMode() 
 is called to show the image posting UI. The user can select an attachment,
-see a preview, add a caption, and then click "Post Image". The script will
+see a preview, add a caption, and then click "Post Attachment". The script will
 handle the file validation, show warnings if necessary, upload the image to the server,
 and then call startPlacingImage() with the URL of the uploaded image and the caption.
 
@@ -59,7 +59,7 @@ function closeImageMode() {
     document.getElementById('image-warning').style.display = 'none';
     document.getElementById('image-preview-area').innerHTML = '';
     document.getElementById('image-post-btn').disabled = true;
-    document.getElementById('image-post-btn').textContent = 'Post Image';
+    document.getElementById('image-post-btn').textContent = 'Post Attachment';
     _imageFile = null;
     _imageExt = null;
     _imagePreviewUrl = null;
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const err = await res.json();
                 _showImageWarning(err.error || 'Upload failed.', true);
                 btn.disabled = false;
-                btn.textContent = 'Post Image';
+                btn.textContent = 'Post Attachment';
                 return;
             }
             const { publicUrl, ext } = await res.json();
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Image upload error:', err);
             _showImageWarning('Upload failed. Please try again.', true);
             btn.disabled = false;
-            btn.textContent = 'Post Image';
+            btn.textContent = 'Post Attachment';
         }
     });
 });
