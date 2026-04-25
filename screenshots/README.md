@@ -75,7 +75,7 @@ A Flood due to **wickedness** occurs when **two** users have been **banished** b
 A Flood due to **moderation** occurs when a post by a user has been flagged by either the **Natural Language** API (text and captions) or by the **Vision** API (images and other attachments).
 
 #### Flood warning modal from Moderation
-![moderationwarning](21-floodwarning-moderation-text.png)
+![moderationwarning](21-floodwarning-moderation.png)
 > When a Flood is triggered from moderation, a different warning appears with different text. It names drop the author of the offending post.
 
 #### Flood triggered by moderated text
