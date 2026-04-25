@@ -4,6 +4,9 @@ Visit the BOARD today: https://tinyurl.com/cis437BOARD
 
 This project for CIS 437 is a web application that is supposed to mimic a community bulletin board, think of it as a social media website. It has a biblical theme to be dramatic. Users can posts sticky notes that either contain solely text, or an attachment (drawing, image, gif, etc.) with a optional caption.
 
+> [!IMPORTANT]
+> You can view screenshots of the functionality of this web application in the `screenshots` directory. Please note the image name to understand context
+
 ## Overview
 ### Posting
 At the top toolbar, there is a button "Post".
