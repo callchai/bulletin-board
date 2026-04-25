@@ -5,7 +5,8 @@ Visit the BOARD today: https://tinyurl.com/cis437BOARD
 This project for CIS 437 is a web application that is supposed to mimic a community bulletin board, think of it as a social media website. It has a biblical theme to be dramatic. Users can posts sticky notes that either contain solely text, or an attachment (drawing, image, gif, etc.) with a optional caption.
 
 > [!IMPORTANT]
-> You can view screenshots of the functionality of this web application in the `screenshots` directory. Please note the image name to understand context
+> You can view screenshots of the functionality of this web application in the `screenshots` directory. Please note the image name to understand context. 
+> Note that some screenshots are on a MacBook computer, and others are on a Windows 11 PC.
 
 ## Overview
 ### Posting
@@ -172,7 +173,7 @@ At the Cloud Function screen, create a new **Python** function
 > [!NOTE]
 > The default service account should be something like `"...-compute@developer.gserviceaccount.com"`, where `...` is a bunch of numbers.
 
-### Create 'moderate-post-image`
+### Create `moderate-post-image`
 Create another **Python** function
 1. Name the function `moderate-post-image`
 2. Set the region to `us-east4`
@@ -190,7 +191,7 @@ Create another **Python** function
     * ***In the requirements.txt** file for this function, it **must** have:<br>
       `functions-framework==3.*`<br>
       `google-cloud-firestore==2.16.0`<br>
-      `google-cloud-vision==3.7.0`<br>`
+      `google-cloud-vision==3.7.0`<br>
       `google-cloud-storage==2.16.0`<br>
 7. Save and Deploy the function.
 
